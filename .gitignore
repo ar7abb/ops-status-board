@@ -1,0 +1,52 @@
+# Private project-control documents
+PROJECT_STATE.md
+docs/MASTER_BLUEPRINT.md
+docs/learning-log.md
+
+# Secrets and local runtime configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python environments, caches, and test output
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local data, logs, and backups
+*.log
+*.db
+*.sqlite
+*.sqlite3
+backups/
+
+# Terraform local state and private variable values
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Local evidence and temporary files
+evidence-private/
+tmp/
+temp/
