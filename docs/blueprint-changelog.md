@@ -2,6 +2,13 @@
 
 This public changelog summarizes approved changes to the Ops Status Board learning and delivery plan. The detailed master blueprint and coaching records remain private control documents outside Git.
 
+## 2.2.0 — 2026-08-03
+
+- Retained the private project state as the ongoing solo task tracker and WIP-one authority.
+- Froze the private GitHub Project as a completed workflow-practice artifact instead of requiring routine board administration.
+- Made GitHub issues optional and retained focused branches and pull requests as the main public review evidence.
+- Preserved state schema 2, the task catalog, the technical architecture, and the local-first delivery order.
+
 ## 2.1.0 — 2026-08-02
 
 - Established a private-control/public-portfolio documentation split.
