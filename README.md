@@ -2,7 +2,7 @@
 
 Ops Status Board is a hands-on DevOps portfolio project showing how a small operations and incident dashboard is developed, tested, deployed, observed, backed up, and recovered.
 
-> **Current status:** The workstation and public repository are ready, and the learning workflow is being established. The application, deployment environments, and public URL do not exist yet.
+> **Current status:** The workstation, public repository, and learning workflow are ready. Repository-state validation and resume protection are in progress. The application, deployment environments, and public URL do not exist yet.
 
 ## Project goals
 
@@ -50,9 +50,9 @@ Backlog -> Ready -> In Progress -> Verification -> Done
                                -> Blocked
 ```
 
-Only one task may be **In Progress** at a time. GitHub may warn when a column limit is exceeded, but the learner and reviewer must enforce this WIP-one rule. Work enters **Done** only after verification and evidence review pass.
+Only one task may be **In Progress** at a time. The private project state is the ongoing workflow source of truth and enforces this WIP-one rule. Work enters **Done** only after verification and evidence review pass.
 
-GitHub task and pull-request templates keep scope, risks, verification, evidence, and review visible throughout the workflow. The public backlog document contains optional ideas; the GitHub Project's **Backlog** status contains planned tasks that are not ready to start.
+The private GitHub Project is retained as a completed workflow-practice artifact rather than updated for routine solo work. GitHub issues are optional when they materially improve public traceability; focused branches and pull requests remain the main public review evidence. Task and pull-request templates keep scope, risks, verification, evidence, and review visible when used. The public backlog document contains optional ideas, not approved work.
 
 ## Security and cost boundaries
 
@@ -63,4 +63,4 @@ GitHub task and pull-request templates keep scope, risks, verification, evidence
 
 ## Current next step
 
-Finish and verify the Milestone 1 learning workflow before adding application code or infrastructure.
+Finish and verify the Milestone 1 state validator and resume protection before adding application code or infrastructure.
