@@ -7,6 +7,7 @@ matches the recorded state.
 """
 
 from argparse import ArgumentParser
+from datetime import date, datetime
 from pathlib import Path
 import re
 from sys import stderr
@@ -269,6 +270,35 @@ def parse_integer(metadata, field, errors, minimum=None, maximum=None):
     return number
 
 
+def parse_card_integer(card, field, errors):
+    value = card.get(field, "")
+    match = re.match(r"^([0-9]+)\b", value)
+    if match is None:
+        add_error(errors, field, "must begin with an integer")
+        return None
+    return int(match.group(1))
+
+
+def is_valid_utc_timestamp(value):
+    if UTC_TIMESTAMP_PATTERN.fullmatch(value) is None:
+        return False
+    try:
+        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return False
+    return True
+
+
+def is_valid_iso_date(value):
+    if DATE_PATTERN.fullmatch(value) is None:
+        return False
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        return False
+    return True
+
+
 def release_for_milestone(milestone):
     if 0 <= milestone <= 2:
         return "v0.1"
@@ -390,10 +420,14 @@ def validate_metadata_values(state, blueprint, errors, warnings):
     if blueprint.get("technical_scope") != "frozen":
         add_error(errors, "technical_scope", "must be frozen")
 
-    if not UTC_TIMESTAMP_PATTERN.fullmatch(state.get("updated_at_utc", "")):
-        add_error(errors, "updated_at_utc", "must use YYYY-MM-DDTHH:MM:SSZ")
-    if not DATE_PATTERN.fullmatch(blueprint.get("last_revised_utc", "")):
-        add_error(errors, "last_revised_utc", "must use YYYY-MM-DD")
+    if not is_valid_utc_timestamp(state.get("updated_at_utc", "")):
+        add_error(
+            errors,
+            "updated_at_utc",
+            "must be a valid UTC timestamp using YYYY-MM-DDTHH:MM:SSZ",
+        )
+    if not is_valid_iso_date(blueprint.get("last_revised_utc", "")):
+        add_error(errors, "last_revised_utc", "must be a valid date using YYYY-MM-DD")
 
 
 def validate_numbers_and_confidence(state, errors):
@@ -465,8 +499,30 @@ def validate_task_relationships(state, state_text, catalog, card, milestone, err
             add_error(errors, "Milestone", "does not match the active task ID")
         if card.get("Status") != state.get("active_task_status"):
             add_error(errors, "Status", "does not match active_task_status")
-        if card.get("Estimated sessions") != state.get("estimated_sessions"):
-            add_error(errors, "Estimated sessions", "does not match metadata")
+        numeric_relationships = (
+            ("Estimated sessions", "estimated_sessions"),
+            ("Actual sessions", "actual_sessions"),
+            ("Confidence before (1–5)", "confidence_before"),
+            ("Confidence after (1–5)", "confidence_after"),
+            ("Attempt count", "attempt_count"),
+        )
+        for card_field, metadata_field in numeric_relationships:
+            card_number = parse_card_integer(card, card_field, errors)
+            try:
+                metadata_number = int(state.get(metadata_field, ""))
+            except ValueError:
+                continue
+            if card_number is not None and card_number != metadata_number:
+                add_error(errors, card_field, f"does not match {metadata_field}")
+
+        if card.get("Highest assistance level") != state.get(
+            "highest_assistance_level"
+        ):
+            add_error(
+                errors,
+                "Highest assistance level",
+                "does not match highest_assistance_level",
+            )
 
     in_progress_count = len(
         re.findall(r"^- Status:\s*In Progress\s*$", state_text, re.MULTILINE)

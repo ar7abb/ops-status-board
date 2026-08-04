@@ -263,6 +263,47 @@ class ProjectStateValidatorTests(unittest.TestCase):
         messages = self.messages(state)
         self.assertTrue(any("working_tree_at_update" in message for message in messages))
 
+    def test_impossible_calendar_values_fail(self):
+        state = VALID_STATE.replace(
+            'updated_at_utc: "2026-08-04T12:00:00Z"',
+            'updated_at_utc: "2026-99-99T12:00:00Z"',
+            1,
+        )
+        blueprint = VALID_BLUEPRINT.replace(
+            'last_revised_utc: "2026-08-04"',
+            'last_revised_utc: "2026-02-30"',
+            1,
+        )
+        messages = self.messages(state, blueprint)
+        self.assertTrue(any("updated_at_utc" in message for message in messages))
+        self.assertTrue(any("last_revised_utc" in message for message in messages))
+
+    def test_task_card_duplicate_values_must_match_metadata(self):
+        replacements = (
+            ("- Estimated sessions: 1", "- Estimated sessions: 2", "Estimated sessions"),
+            ("- Actual sessions: 1", "- Actual sessions: 2", "Actual sessions"),
+            (
+                "- Confidence before (1–5): 2",
+                "- Confidence before (1–5): 3",
+                "Confidence before (1–5)",
+            ),
+            (
+                "- Confidence after (1–5): 0 — in progress",
+                "- Confidence after (1–5): 1 — in progress",
+                "Confidence after (1–5)",
+            ),
+            ("- Attempt count: 1", "- Attempt count: 2", "Attempt count"),
+            (
+                "- Highest assistance level: L2",
+                "- Highest assistance level: L3",
+                "Highest assistance level",
+            ),
+        )
+        for old, new, field in replacements:
+            with self.subTest(field=field):
+                messages = self.messages(VALID_STATE.replace(old, new, 1))
+                self.assertTrue(any(field in message for message in messages))
+
 
 if __name__ == "__main__":
     unittest.main()
