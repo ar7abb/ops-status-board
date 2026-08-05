@@ -1,12 +1,9 @@
 import importlib.util
-from pathlib import Path
 import unittest
-
+from pathlib import Path
 
 SCRIPT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / "scripts"
-    / "validate_project_state.py"
+    Path(__file__).resolve().parents[1] / "scripts" / "validate_project_state.py"
 )
 SPEC = importlib.util.spec_from_file_location("validate_project_state", SCRIPT_PATH)
 validator = importlib.util.module_from_spec(SPEC)
@@ -186,7 +183,10 @@ class ProjectStateValidatorTests(unittest.TestCase):
 
     def test_vague_next_action_fails(self):
         state = VALID_STATE.replace(
-            "Run `python3 -m unittest discover -s tests -v` and expect all tests to pass.",
+            (
+                "Run `python3 -m unittest discover -s tests -v` "
+                "and expect all tests to pass."
+            ),
             "Continue the project.",
             1,
         )
@@ -195,7 +195,10 @@ class ProjectStateValidatorTests(unittest.TestCase):
 
     def test_multi_action_next_action_fails(self):
         state = VALID_STATE.replace(
-            "Run `python3 -m unittest discover -s tests -v` and expect all tests to pass.",
+            (
+                "Run `python3 -m unittest discover -s tests -v` "
+                "and expect all tests to pass."
+            ),
             "Run the tests and edit the README; expect both actions to succeed.",
             1,
         )
@@ -250,7 +253,9 @@ class ProjectStateValidatorTests(unittest.TestCase):
         self.assertNotIn(secret_value, rendered)
 
     def test_task_release_mismatch_fails(self):
-        state = VALID_STATE.replace("current_release: \"v0.1\"", "current_release: \"v0.2\"", 1)
+        state = VALID_STATE.replace(
+            'current_release: "v0.1"', 'current_release: "v0.2"', 1
+        )
         messages = self.messages(state)
         self.assertTrue(any("current_release" in message for message in messages))
 
@@ -261,7 +266,9 @@ class ProjectStateValidatorTests(unittest.TestCase):
             1,
         )
         messages = self.messages(state)
-        self.assertTrue(any("working_tree_at_update" in message for message in messages))
+        self.assertTrue(
+            any("working_tree_at_update" in message for message in messages)
+        )
 
     def test_impossible_calendar_values_fail(self):
         state = VALID_STATE.replace(
@@ -280,7 +287,11 @@ class ProjectStateValidatorTests(unittest.TestCase):
 
     def test_task_card_duplicate_values_must_match_metadata(self):
         replacements = (
-            ("- Estimated sessions: 1", "- Estimated sessions: 2", "Estimated sessions"),
+            (
+                "- Estimated sessions: 1",
+                "- Estimated sessions: 2",
+                "Estimated sessions",
+            ),
             ("- Actual sessions: 1", "- Actual sessions: 2", "Actual sessions"),
             (
                 "- Confidence before (1–5): 2",
