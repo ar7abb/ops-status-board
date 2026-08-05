@@ -6,12 +6,11 @@ not prove that Git, Docker, virtual machines, AWS, or any other external system
 matches the recorded state.
 """
 
+import re
 from argparse import ArgumentParser
 from datetime import date, datetime
 from pathlib import Path
-import re
 from sys import stderr
-
 
 REQUIRED_STATE_FIELDS = (
     "state_schema",
@@ -98,7 +97,9 @@ WORKING_TREE_STATUSES = {"clean", "dirty"}
 RELEASES = {"v0.1", "v0.2", "v0.3", "v0.4", "v0.5", "v0.9", "v1.0"}
 
 TASK_ID_PATTERN = re.compile(r"^M(?:0[0-9]|1[0-9])-T[0-9]{2}$")
-UTC_TIMESTAMP_PATTERN = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$")
+UTC_TIMESTAMP_PATTERN = re.compile(
+    r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+)
 DATE_PATTERN = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 SAFE_FIELD_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
 MILESTONE_HEADING_PATTERN = re.compile(r"^## Milestone ([0-9]+)\b")
@@ -335,7 +336,9 @@ def parse_blueprint_catalog(blueprint_text, errors):
         task_id = task_match.group("task_id")
         ordinal = int(task_match.group("ordinal"))
         if current_milestone is None:
-            add_error(errors, "blueprint task catalog", "task appears outside a milestone")
+            add_error(
+                errors, "blueprint task catalog", "task appears outside a milestone"
+            )
             continue
 
         if task_id in catalog:
@@ -469,7 +472,9 @@ def validate_task_relationships(state, state_text, catalog, card, milestone, err
 
     catalog_milestone = catalog.get(active_task_id)
     if catalog_milestone is None:
-        add_error(errors, "active_task_id", "is not present in the blueprint task catalog")
+        add_error(
+            errors, "active_task_id", "is not present in the blueprint task catalog"
+        )
         return
 
     if milestone is not None and catalog_milestone != milestone:
@@ -559,7 +564,7 @@ def validate_exact_next_action(state_text, errors):
 
 
 def normalize_placeholder(value):
-    return value.strip().strip('"\'`').lower()
+    return value.strip().strip("\"'`").lower()
 
 
 def validate_secret_like_content(text, document_label, errors):
