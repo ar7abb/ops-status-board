@@ -2,7 +2,7 @@
 
 Ops Status Board is a hands-on DevOps portfolio project showing how a small operations and incident dashboard is developed, tested, deployed, observed, backed up, and recovered.
 
-> **Current status:** The workstation, public repository, and learning workflow are ready. Repository-state validation and resume protection are in progress. The application, deployment environments, and public URL do not exist yet.
+> **Current status:** The workstation, public repository, learning workflow, state validation, and resume protection are ready. The Python project foundation is now in progress; no application service, deployment environment, or public URL exists yet.
 
 ## Project goals
 
@@ -63,4 +63,4 @@ The private GitHub Project is retained as a completed workflow-practice artifact
 
 ## Current next step
 
-Finish and verify the Milestone 1 state validator and resume protection before adding application code or infrastructure.
+Complete and verify the Python project foundation before adding application dependencies or behavior.
