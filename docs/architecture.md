@@ -1,46 +1,63 @@
 # Ops Status Board Architecture
 
-> **Current status:** This document describes the planned architecture. The application, database, Nginx configuration, deployment, and cloud resources have not been implemented yet.
+> **Current status:** The FastAPI application factory, validated settings, request IDs, safe errors, and structured/redacted logging exist. PostgreSQL-backed behavior, containers, server deployment, and AWS resources do not yet exist.
 
-## Planned request path
+## Architecture purpose
 
-```text
-Browser or API client
-        |
-        v
-      Nginx
-        |
-        v
-  FastAPI application
-        |
-        v
-    PostgreSQL
-```
+The application is intentionally small. It creates an operable workload through which the learner can practise delivery, configuration, security, observation, failure, backup, recovery, and cost control.
 
-Nginx will receive HTTP requests on the deployed server and forward application requests to FastAPI. FastAPI will provide the API and application behavior. PostgreSQL will store persistent application data.
+Repetitive FastAPI, SQLAlchemy, Jinja, and application-test plumbing may be Codex-scaffolded. The learner owns the Linux, container, pipeline, server, automation, observability, recovery, and cloud operations around it.
 
-During early development, the client may connect directly to FastAPI. Nginx is introduced later when the application is deployed to the separate practice server.
-
-## Planned environments
-
-| Environment | Planned responsibility |
-|---|---|
-| Windows | Host WSL2, the browser, and terminal access |
-| Ubuntu 24.04 under WSL2 | Develop, test, containerize, and automate the project |
-| Separate Ubuntu server | Practise deployment, Nginx, operations, monitoring, backup, and recovery |
-| AWS | Later adaptation of the proven local system after cost and safety gates pass |
-
-## Planned delivery path
+## Local request and operations path
 
 ```text
-Source code -> GitHub Actions -> container image -> GHCR -> deployment server
+Windows browser or API client
+        |
+        v
+Nginx on separate Ubuntu 24.04 VM
+        |
+        v
+FastAPI container <-> PostgreSQL container
+        |
+        +--> structured logs and request IDs
+        +--> Prometheus metrics -> Grafana dashboards/alerts
+        +--> scheduled backup -> clean restore drill
 ```
 
-GitHub Actions will test the project and later publish a versioned container image to GitHub Container Registry (GHCR). The deployment server will pull and run that image. Cloud deployment is deferred until the local workflow is implemented and verified.
+The Ubuntu 24.04 WSL2 distribution is the workstation for code, Git, Docker, CI configuration, Ansible, and Terraform. The VirtualBox VM is rebuilt to supported Ubuntu 24.04 during M05 and remains a separate server for SSH, firewall, permissions, Nginx, systemd, deployment, monitoring, failure, and recovery practice.
 
-## Scope boundaries
+## Delivery path
 
-- The core project is one FastAPI application and one PostgreSQL database managed with Docker Compose.
-- Nginx is the planned server entry point; it is not the operating system or the server itself.
-- Kubernetes, microservices, managed databases, and a JavaScript frontend are outside the core scope.
-- Implementation evidence will be added only after each component is built and verified.
+```text
+source -> pull request checks -> protected main -> GHCR digest
+                                                |
+                                                +-> local VM deployment
+                                                +-> later AWS deployment
+```
+
+Deployments consume immutable image digests. The server does not rebuild application source.
+
+## Core AWS path
+
+```text
+Terraform -> AWS APIs -> network/IAM/SSM/EC2/EBS/private S3
+GitHub Actions -> restricted OIDC role -> SSM digest deployment
+EC2 workload -> CloudWatch logs, metrics, and alarms
+PostgreSQL backup -> encrypted private S3 -> timed clean restore
+```
+
+The cloud core demonstrates infrastructure, identity, secure delivery, monitoring, recovery, drift, destroy, recreate, and billing verification without requiring an always-running public website. Systems Manager replaces inbound SSH. CloudWatch replaces duplicating the full local monitoring stack on a small EC2 instance.
+
+## Security boundaries
+
+- FastAPI, PostgreSQL, metrics, dashboards, and Docker APIs are not unintentionally public.
+- Local VM exposure is explicitly inspected because Docker-published ports can interact with firewall filtering.
+- Cloud administration uses Systems Manager and has no inbound SSH.
+- GitHub uses short-lived, repository/environment-restricted OIDC credentials.
+- Terraform state and database backups are private and encrypted.
+- Application secrets, database credentials, private keys, account identifiers, and sensitive evidence never enter Git or logs.
+- MFA, least privilege, non-root containers, dependency/container/IaC scanning, safe logs, recovery proof, and threat review are integrated across the core.
+
+## Optional public architecture
+
+A paid domain, public DNS, trusted HTTPS, and a permanently reachable dashboard require a separate cost/security decision. Loki, Alloy, external email notification, automatic rollback, Kubernetes, managed databases, and load balancers are also optional extensions, not core completion requirements.

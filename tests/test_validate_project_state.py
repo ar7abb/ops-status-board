@@ -11,9 +11,9 @@ SPEC.loader.exec_module(validator)
 
 
 VALID_BLUEPRINT = """---
-blueprint_version: "2.2.0"
+blueprint_version: "3.0.0"
 project_state_schema: 2
-last_revised_utc: "2026-08-04"
+last_revised_utc: "2026-08-09"
 technical_scope: "frozen"
 ---
 
@@ -29,8 +29,8 @@ technical_scope: "frozen"
 
 VALID_STATE = """---
 state_schema: 2
-blueprint_version: "2.2.0"
-updated_at_utc: "2026-08-04T12:00:00Z"
+blueprint_version: "3.0.0"
+updated_at_utc: "2026-08-09T12:00:00Z"
 current_release: "v0.1"
 current_milestone: 1
 milestone_status: "In progress"
@@ -224,13 +224,13 @@ class ProjectStateValidatorTests(unittest.TestCase):
 
     def test_version_mismatch_warns_without_values(self):
         state = VALID_STATE.replace(
-            'blueprint_version: "2.2.0"', 'blueprint_version: "9.9.9"', 1
+            'blueprint_version: "3.0.0"', 'blueprint_version: "9.9.9"', 1
         )
         errors, warnings = self.validate(state)
         rendered = "\n".join(errors + warnings)
         self.assertTrue(any("blueprint_version" in message for message in warnings))
         self.assertNotIn("9.9.9", rendered)
-        self.assertNotIn("2.2.0", rendered)
+        self.assertNotIn("3.0.0", rendered)
 
     def test_multiple_in_progress_tasks_fail(self):
         state = VALID_STATE.replace(
@@ -272,18 +272,42 @@ class ProjectStateValidatorTests(unittest.TestCase):
 
     def test_impossible_calendar_values_fail(self):
         state = VALID_STATE.replace(
-            'updated_at_utc: "2026-08-04T12:00:00Z"',
+            'updated_at_utc: "2026-08-09T12:00:00Z"',
             'updated_at_utc: "2026-99-99T12:00:00Z"',
             1,
         )
         blueprint = VALID_BLUEPRINT.replace(
-            'last_revised_utc: "2026-08-04"',
+            'last_revised_utc: "2026-08-09"',
             'last_revised_utc: "2026-02-30"',
             1,
         )
         messages = self.messages(state, blueprint)
         self.assertTrue(any("updated_at_utc" in message for message in messages))
         self.assertTrue(any("last_revised_utc" in message for message in messages))
+
+    def test_blueprint_3_release_mapping(self):
+        expected = {
+            0: "v0.1",
+            2: "v0.1",
+            3: "v0.2",
+            4: "v0.2",
+            5: "v0.3",
+            7: "v0.3",
+            8: "v0.4",
+            9: "v0.4",
+            10: "v0.5",
+            11: "v0.9",
+            12: "v1.0",
+            13: None,
+        }
+        for milestone, release in expected.items():
+            with self.subTest(milestone=milestone):
+                self.assertEqual(validator.release_for_milestone(milestone), release)
+
+    def test_milestone_above_12_fails(self):
+        state = VALID_STATE.replace("current_milestone: 1", "current_milestone: 13", 1)
+        messages = self.messages(state)
+        self.assertTrue(any("current_milestone" in message for message in messages))
 
     def test_task_card_duplicate_values_must_match_metadata(self):
         replacements = (
