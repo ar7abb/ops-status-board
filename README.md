@@ -2,7 +2,9 @@
 
 Ops Status Board is a hands-on DevOps portfolio project showing how a small operations and incident dashboard is developed, tested, deployed, observed, backed up, and recovered.
 
-> **Current status:** The workstation, public repository, learning workflow, state validation, and resume protection are ready. The Python project foundation is now in progress; no application service, deployment environment, or public URL exists yet.
+> **Current status:** The Python foundation, reproducible dependencies,
+> validated settings, and FastAPI application factory are ready. No
+> database-backed service, deployment environment, or public URL exists yet.
 
 ## Project goals
 
@@ -40,6 +42,21 @@ The core project uses one application, one PostgreSQL database, and Docker Compo
 
 Detailed coaching records, environment snapshots, and the master learning blueprint are private control documents kept outside Git. They are not required to understand, build, or evaluate the public project.
 
+## Local application startup
+
+Create a local `.env` from the safe example and replace every placeholder. The
+real `.env` remains untracked and must never be committed.
+
+```bash
+cp .env.example .env
+python -m uvicorn ops_status_board.app:create_app --factory --app-dir src
+```
+
+Startup validates configuration before FastAPI begins serving requests. Missing
+required settings or unsupported values stop startup without printing secret
+values. The application currently exposes FastAPI's generated `/docs`; incident
+routes and operational endpoints arrive in later tasks.
+
 ## Learning workflow
 
 Planned tasks move through:
@@ -63,4 +80,5 @@ The private GitHub Project is retained as a completed workflow-practice artifact
 
 ## Current next step
 
-Complete and verify the Python project foundation before adding application dependencies or behavior.
+Add safe errors, structured logging, redaction, and request IDs before database
+behavior.
