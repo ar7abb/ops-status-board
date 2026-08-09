@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. A small FastAPI/PostgreSQL incident dashboard provides a realistic workload for learning how to build, deliver, configure, observe, secure, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0 and 1 are complete. In Milestone 2, the Python foundation, reproducible dependencies, validated startup, request IDs, safe errors, and structured/redacted logs are complete. PostgreSQL-backed behavior has not started, and no deployment or cloud environment exists.
+> **Current status:** Milestones 0 and 1 are complete. In Milestone 2, the Python foundation, reproducible dependencies, validated startup, request IDs, safe errors, structured/redacted logs, PostgreSQL operator lab, Incident model, and initial versioned database migration are complete. The API/dashboard workflow remains.
 
 ## Portfolio focus
 
@@ -60,7 +60,18 @@ python -m uvicorn ops_status_board.app:create_app \
   --factory --app-dir src --no-access-log
 ```
 
-Startup validates configuration before FastAPI serves requests. Every response receives an `X-Request-ID`. Production logs are structured JSON, omit query strings, redact configured secrets, and return generic traceable errors to clients. The application currently exposes FastAPI's generated `/docs`; the database-backed workflow arrives in the remaining Milestone 2 tasks.
+Startup validates configuration before FastAPI serves requests. Every response receives an `X-Request-ID`. Production logs are structured JSON, omit query strings, redact configured secrets, and return generic traceable errors to clients. The application currently exposes FastAPI's generated `/docs`. The database-backed incident API and dashboard workflow are the next Milestone 2 work.
+
+## Database migrations
+
+Database schema changes are versioned with Alembic. With PostgreSQL running and a private local `.env` configured, apply and inspect the current schema revision:
+
+```bash
+python -m alembic upgrade head
+python -m alembic current
+```
+
+Use `python -m alembic downgrade base` only against an empty disposable development database: reversing a real migration can remove data.
 
 ## Workflow and safety
 
@@ -73,4 +84,4 @@ Startup validates configuration before FastAPI serves requests. Every response r
 
 ## Current next step
 
-Review the M02-T05 PostgreSQL operator-lab and Incident-model plan before starting PostgreSQL or changing application code.
+Review the M02-T07 API/dashboard workflow plan before changing application code.

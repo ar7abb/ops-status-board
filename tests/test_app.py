@@ -11,7 +11,7 @@ from ops_status_board.config import Settings, SettingsError
 
 def test_factory_builds_application_from_injected_settings() -> None:
     settings = Settings(
-        database_url="postgresql://app:secret@db/ops_status_board",
+        database_url="postgresql+psycopg://app:secret@db/ops_status_board",
         admin_api_token="test-admin-token",
         app_environment="test",
         app_version="test-version",

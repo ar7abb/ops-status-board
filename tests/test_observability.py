@@ -15,7 +15,7 @@ from ops_status_board.observability import (
     redact,
 )
 
-DATABASE_SECRET = "postgresql://app:database-password@db/ops_status_board"
+DATABASE_SECRET = "postgresql+psycopg://app:database-password@db/ops_status_board"
 TOKEN_SECRET = "super-secret-admin-token"
 
 
