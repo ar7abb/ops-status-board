@@ -49,13 +49,29 @@ real `.env` remains untracked and must never be committed.
 
 ```bash
 cp .env.example .env
-python -m uvicorn ops_status_board.app:create_app --factory --app-dir src
+python -m uvicorn ops_status_board.app:create_app \
+  --factory --app-dir src --no-access-log
 ```
 
 Startup validates configuration before FastAPI begins serving requests. Missing
 required settings or unsupported values stop startup without printing secret
 values. The application currently exposes FastAPI's generated `/docs`; incident
 routes and operational endpoints arrive in later tasks.
+
+### Request tracing and safe logs
+
+Every HTTP response includes an `X-Request-ID`. A safe client-supplied ID is
+reused; otherwise, the application generates one. Use this ID to connect a
+client-visible failure to protected operator logs.
+
+Production application logs are structured JSON. Routine request records keep
+the method, URL path (without its query string), response status, duration, and
+request ID. Sensitive fields and known configured secret values are redacted.
+Unexpected errors return a generic `500` response with the request ID while the
+diagnostic traceback remains only in the protected, redacted log.
+
+The startup command disables Uvicorn's duplicate access log because it records
+raw query strings. The application middleware supplies the safer request log.
 
 ## Learning workflow
 
@@ -80,5 +96,4 @@ The private GitHub Project is retained as a completed workflow-practice artifact
 
 ## Current next step
 
-Add safe errors, structured logging, redaction, and request IDs before database
-behavior.
+Add the PostgreSQL development service before database-backed behavior.
