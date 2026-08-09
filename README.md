@@ -2,7 +2,9 @@
 
 Ops Status Board is a hands-on DevOps portfolio project showing how a small operations and incident dashboard is developed, tested, deployed, observed, backed up, and recovered.
 
-> **Current status:** The workstation, public repository, learning workflow, state validation, and resume protection are ready. The Python project foundation is now in progress; no application service, deployment environment, or public URL exists yet.
+> **Current status:** The Python foundation, reproducible dependencies,
+> validated settings, and FastAPI application factory are ready. No
+> database-backed service, deployment environment, or public URL exists yet.
 
 ## Project goals
 
@@ -40,6 +42,37 @@ The core project uses one application, one PostgreSQL database, and Docker Compo
 
 Detailed coaching records, environment snapshots, and the master learning blueprint are private control documents kept outside Git. They are not required to understand, build, or evaluate the public project.
 
+## Local application startup
+
+Create a local `.env` from the safe example and replace every placeholder. The
+real `.env` remains untracked and must never be committed.
+
+```bash
+cp .env.example .env
+python -m uvicorn ops_status_board.app:create_app \
+  --factory --app-dir src --no-access-log
+```
+
+Startup validates configuration before FastAPI begins serving requests. Missing
+required settings or unsupported values stop startup without printing secret
+values. The application currently exposes FastAPI's generated `/docs`; incident
+routes and operational endpoints arrive in later tasks.
+
+### Request tracing and safe logs
+
+Every HTTP response includes an `X-Request-ID`. A safe client-supplied ID is
+reused; otherwise, the application generates one. Use this ID to connect a
+client-visible failure to protected operator logs.
+
+Production application logs are structured JSON. Routine request records keep
+the method, URL path (without its query string), response status, duration, and
+request ID. Sensitive fields and known configured secret values are redacted.
+Unexpected errors return a generic `500` response with the request ID while the
+diagnostic traceback remains only in the protected, redacted log.
+
+The startup command disables Uvicorn's duplicate access log because it records
+raw query strings. The application middleware supplies the safer request log.
+
 ## Learning workflow
 
 Planned tasks move through:
@@ -63,4 +96,4 @@ The private GitHub Project is retained as a completed workflow-practice artifact
 
 ## Current next step
 
-Complete and verify the Python project foundation before adding application dependencies or behavior.
+Add the PostgreSQL development service before database-backed behavior.
