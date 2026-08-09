@@ -96,7 +96,7 @@ ASSISTANCE_LEVELS = {f"L{number}" for number in range(6)}
 WORKING_TREE_STATUSES = {"clean", "dirty"}
 RELEASES = {"v0.1", "v0.2", "v0.3", "v0.4", "v0.5", "v0.9", "v1.0"}
 
-TASK_ID_PATTERN = re.compile(r"^M(?:0[0-9]|1[0-9])-T[0-9]{2}$")
+TASK_ID_PATTERN = re.compile(r"^M(?:0[0-9]|1[0-2])-T[0-9]{2}$")
 UTC_TIMESTAMP_PATTERN = re.compile(
     r"^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 )
@@ -104,7 +104,7 @@ DATE_PATTERN = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 SAFE_FIELD_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
 MILESTONE_HEADING_PATTERN = re.compile(r"^## Milestone ([0-9]+)\b")
 CATALOG_TASK_PATTERN = re.compile(
-    r"^(?P<ordinal>[0-9]+)\.\s+\*\*(?P<task_id>M[0-1][0-9]-T[0-9]{2})\s+—"
+    r"^(?P<ordinal>[0-9]+)\.\s+\*\*(?P<task_id>M(?:0[0-9]|1[0-2])-T[0-9]{2})\s+—"
 )
 SECRET_LINE_PATTERN = re.compile(
     r"^\s*(?:[-*]\s*)?"
@@ -305,15 +305,15 @@ def release_for_milestone(milestone):
         return "v0.1"
     if 3 <= milestone <= 4:
         return "v0.2"
-    if 5 <= milestone <= 8:
+    if 5 <= milestone <= 7:
         return "v0.3"
-    if 9 <= milestone <= 11:
+    if 8 <= milestone <= 9:
         return "v0.4"
-    if 12 <= milestone <= 13:
+    if milestone == 10:
         return "v0.5"
-    if milestone == 14:
+    if milestone == 11:
         return "v0.9"
-    if 15 <= milestone <= 16:
+    if milestone == 12:
         return "v1.0"
     return None
 
@@ -434,7 +434,7 @@ def validate_metadata_values(state, blueprint, errors, warnings):
 
 
 def validate_numbers_and_confidence(state, errors):
-    current_milestone = parse_integer(state, "current_milestone", errors, 0, 16)
+    current_milestone = parse_integer(state, "current_milestone", errors, 0, 12)
     estimated_sessions = parse_integer(state, "estimated_sessions", errors, 1)
     parse_integer(state, "actual_sessions", errors, 0)
     parse_integer(state, "attempt_count", errors, 0)
@@ -467,7 +467,7 @@ def validate_numbers_and_confidence(state, errors):
 def validate_task_relationships(state, state_text, catalog, card, milestone, errors):
     active_task_id = state.get("active_task_id", "")
     if not TASK_ID_PATTERN.fullmatch(active_task_id):
-        add_error(errors, "active_task_id", "must match M[0-1][0-9]-T[0-9][0-9]")
+        add_error(errors, "active_task_id", "must match M00-T00 through M12-T99")
         return
 
     catalog_milestone = catalog.get(active_task_id)
