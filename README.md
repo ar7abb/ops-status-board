@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0 and 1 are complete. In Milestone 2, the Python foundation, reproducible dependencies, validated startup, request observability, PostgreSQL foundation, versioned migration, protected incident API, and server-rendered dashboard are complete. Operational endpoints, failure tests, the local demonstration, and release `v0.1` remain.
+> **Current status:** Milestones 0 and 1 are complete. In Milestone 2, the Python foundation, reproducible dependencies, validated startup, request observability, PostgreSQL foundation, versioned migration, protected incident API, server-rendered dashboard, and operational endpoints are complete. Unit and integration failure tests, the local demonstration, and release `v0.1` remain.
 
 ## Portfolio focus
 
@@ -171,6 +171,19 @@ A resolved incident must include `resolved_at`. An active incident must not incl
 Invalid input is rejected before it reaches PostgreSQL. An unknown incident returns `404`, invalid data returns `422`, and an unauthenticated write returns `401`.
 `PUT` is a full replacement: send the same complete payload used for `POST`.
 
+## Operational endpoints
+
+| Method | Path | Purpose | Authentication |
+|---|---|---|---|
+| `GET` | `/health/live` | Confirm the HTTP application process is running; it never queries PostgreSQL | Public |
+| `GET` | `/health/ready` | Confirm a minimal PostgreSQL query succeeds | Public |
+| `GET` | `/version` | Return the configured application version | Public |
+| `GET` | `/metrics` | Return minimal Prometheus-compatible process metrics | Bearer token |
+
+Liveness and readiness answer different operator questions: liveness detects whether the application process can respond, while readiness detects whether it can currently use its database. A database failure therefore leaves liveness at `200` but makes readiness return `503` with a safe `Not ready` response.
+
+Metrics remain protected because they are intended for a trusted monitoring client, not public discovery.
+
 ## Configuration and security
 
 Startup validates required configuration before the application serves requests.
@@ -244,4 +257,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Review the M02-T08 operational-endpoints, failure-test, local-demo, and `v0.1` release plan.
+Review the M02-T10 unit-test plan, followed by integration failure tests, the local demo, and release `v0.1`.
