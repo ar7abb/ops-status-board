@@ -142,3 +142,19 @@ def test_invalid_update_is_rejected_before_replacing_incident(
     unchanged = client.get(f"/api/incidents/{incident_id}")
     assert unchanged.status_code == 200
     assert unchanged.json()["status"] == "investigating"
+
+
+def test_list_incidents_returns_an_empty_list_when_none_exist(
+    client: TestClient,
+) -> None:
+    response = client.get("/api/incidents")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_get_incident_returns_404_when_unknown(client: TestClient) -> None:
+    response = client.get("/api/incidents/999")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Not found"}
