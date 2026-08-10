@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0 and 1 are complete. In Milestone 2, the Python foundation, reproducible dependencies, validated startup, request observability, PostgreSQL foundation, versioned migration, protected incident API, server-rendered dashboard, and operational endpoints are complete. Unit and integration failure tests, the local demonstration, and release `v0.1` remain.
+> **Current status:** Milestones 0, 1, and 2 are complete. The local workload is verified and ready for release `v0.1`; Milestone 3 containerization is next.
 
 ## Portfolio focus
 
@@ -271,4 +271,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Review the M02-T10 unit-test plan, followed by integration failure tests, the local demo, and release `v0.1`.
+Begin M03-T01: inspect the Docker build context, choose a pinned base image, and define verification.
