@@ -150,6 +150,7 @@ Available local interfaces:
 | `GET` | `/api/incidents` | List incidents as JSON | Public |
 | `GET` | `/api/incidents/{incident_id}` | Return one incident or `404` | Public |
 | `POST` | `/api/incidents` | Validate and create an incident | Bearer token |
+| `PUT` | `/api/incidents/{incident_id}` | Validate and replace an incident or return `404` | Bearer token |
 
 Supported severity values:
 
@@ -168,6 +169,7 @@ Supported status values:
 A resolved incident must include `resolved_at`. An active incident must not include a resolved timestamp.
 
 Invalid input is rejected before it reaches PostgreSQL. An unknown incident returns `404`, invalid data returns `422`, and an unauthenticated write returns `401`.
+`PUT` is a full replacement: send the same complete payload used for `POST`.
 
 ## Configuration and security
 

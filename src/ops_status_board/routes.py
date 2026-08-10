@@ -76,6 +76,28 @@ def create_incident(payload: IncidentCreate, session: DatabaseSession) -> Incide
     return incident
 
 
+@api_router.put(
+    "/{incident_id}",
+    response_model=IncidentResponse,
+    dependencies=[Depends(require_admin)],
+)
+def update_incident(
+    incident_id: int,
+    payload: IncidentCreate,
+    session: DatabaseSession,
+) -> Incident:
+    """Replace one authenticated incident or return a normal 404 response."""
+    incident = session.get(Incident, incident_id)
+    if incident is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+
+    for field, value in payload.model_dump().items():
+        setattr(incident, field, value)
+    session.commit()
+    session.refresh(incident)
+    return incident
+
+
 @dashboard_router.get("/", response_class=HTMLResponse)
 def dashboard(request: Request, session: DatabaseSession) -> Response:
     """Render the current incidents as completed HTML."""

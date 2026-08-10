@@ -28,6 +28,7 @@ def test_factory_builds_application_from_injected_settings() -> None:
     assert "/" in route_paths
     assert "/api/incidents" in route_paths
     assert "/api/incidents/{incident_id}" in route_paths
+    assert "put" in application.openapi()["paths"]["/api/incidents/{incident_id}"]
 
 
 def test_factory_refuses_to_build_without_required_settings(
