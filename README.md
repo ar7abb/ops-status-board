@@ -236,6 +236,20 @@ python -m pip check
 git diff --check
 ```
 
+### Opt-in PostgreSQL integration tests
+
+`tests/test_postgres_integration.py` uses only the disposable local
+`ops_status_board_test` database. It is skipped unless explicitly enabled.
+
+Create that database locally and run migrations first. Then run:
+
+```bash
+RUN_POSTGRES_INTEGRATION=1 python -m pytest -q tests/test_postgres_integration.py
+```
+
+The tests verify the database name before modifying data and clean up test
+incidents afterward.
+
 A release candidate must also prove that:
 
 - dependencies install in a clean environment;

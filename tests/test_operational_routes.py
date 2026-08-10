@@ -97,3 +97,27 @@ def test_metrics_requires_bearer_token_and_returns_prometheus_text() -> None:
     assert allowed.status_code == 200
     assert allowed.headers["content-type"].startswith("text/plain")
     assert "ops_status_board_info 1" in allowed.text
+
+
+def test_liveness_stays_healthy_when_real_database_connection_fails() -> None:
+    settings = Settings(
+        database_url=(
+            "postgresql+psycopg://app:unreachable@127.0.0.1:1/"
+            "ops_status_board?connect_timeout=1"
+        ),
+        admin_api_token="test-admin-token",
+        app_environment="test",
+        app_version="test-version",
+        _env_file=None,
+    )
+    application = create_app(settings)
+
+    with TestClient(application) as client:
+        liveness = client.get("/health/live")
+        readiness = client.get("/health/ready")
+
+    assert liveness.status_code == 200
+    assert liveness.json() == {"status": "ok"}
+    assert readiness.status_code == 503
+    assert readiness.json() == {"detail": "Not ready"}
+    assert "127.0.0.1" not in readiness.text
