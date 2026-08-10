@@ -1,6 +1,6 @@
 # Ops Status Board Architecture
 
-> **Current status:** The FastAPI application factory, validated settings, request IDs, safe errors, and structured/redacted logging exist. PostgreSQL-backed behavior, containers, server deployment, and AWS resources do not yet exist.
+> **Current status:** The locally verified FastAPI and PostgreSQL workload includes validated settings, request IDs, safe errors, structured/redacted logging, migrations, incident routes, dashboard, operational endpoints, and integration tests. Containers, server deployment, and AWS resources do not yet exist.
 
 ## Architecture purpose
 

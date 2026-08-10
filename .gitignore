@@ -12,12 +12,14 @@ docs/learning-log.md
 *.p12
 *.pfx
 
-# Python environments, caches, and test output
+# Python environments, caches, build artifacts, and test output
 .venv/
 venv/
-__pycache__/
+**pycache**/
 *.py[cod]
 *.egg-info/
+build/
+dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/

@@ -129,3 +129,15 @@ def test_load_settings_reads_approved_environment_names(
     assert settings.app_environment == "test"
     assert settings.app_version == "test-version"
     assert settings.log_level == "WARNING"
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("database_url", "   "),
+        ("admin_api_token", ""),
+    ],
+)
+def test_settings_reject_blank_secret_values(field: str, value: str) -> None:
+    with pytest.raises(ValidationError, match="must not be empty"):
+        make_settings(**{field: value})

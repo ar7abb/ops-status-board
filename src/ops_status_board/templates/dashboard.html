@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ops Status Board</title>
+</head>
+<body>
+  <main>
+    <h1>Ops Status Board</h1>
+    <p>{{ incidents | length }} incident(s) recorded</p>
+
+    {% if incidents %}
+      <ul>
+        {% for incident in incidents %}
+          <li>
+            <strong>{{ incident.title }}</strong>
+            — {{ incident.severity }}
+            — {{ incident.status }}
+            <p>{{ incident.summary }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No incidents have been recorded.</p>
+    {% endif %}
+  </main>
+</body>
+</html>

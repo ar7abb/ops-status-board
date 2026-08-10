@@ -4,6 +4,7 @@ import json
 from io import StringIO
 
 from fastapi.testclient import TestClient
+from pydantic import SecretStr
 
 from ops_status_board.app import create_app
 from ops_status_board.config import Settings
@@ -110,6 +111,17 @@ def test_redaction_hides_sensitive_fields_and_nested_secret_values() -> None:
         "authorization": REDACTED,
         "nested": {"password": REDACTED},
     }
+
+
+def test_redaction_handles_direct_secrets_and_sequences() -> None:
+    visible_secret = "visible-direct-secret"
+
+    safe = redact(
+        [SecretStr(visible_secret), visible_secret],
+        known_secrets=(visible_secret,),
+    )
+
+    assert safe == [REDACTED, REDACTED]
 
 
 def test_unexpected_error_is_safe_and_traceable() -> None:
