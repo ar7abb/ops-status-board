@@ -7,6 +7,8 @@ docs/learning-log.md
 .env
 .env.*
 !.env.example
+!postgres.env.example
+postgres.env
 *.pem
 *.key
 *.p12
