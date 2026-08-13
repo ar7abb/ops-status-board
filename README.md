@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0, 1, and 2 are complete. The local workload is verified and ready for release `v0.1`; Milestone 3 containerization is next.
+> **Current status:** Milestones 0, 1, and 2 are complete. The local workload is verified and released as `v0.1`; Milestone 3 containerization is in progress.
 
 ## Portfolio focus
 
@@ -95,7 +95,51 @@ cp .env.example .env
 
 Replace every placeholder in `.env` with a local value. The real `.env` is ignored by Git and must never be committed.
 
-The application expects a PostgreSQL instance matching the private `DATABASE_URL`. Docker Compose management of the complete local stack is introduced in Milestone 3.
+The application expects a PostgreSQL instance matching the private `DATABASE_URL`.
+
+## Local Docker Compose
+
+Use Docker Compose to run the application and PostgreSQL together on a local machine. Docker and the Docker Compose plugin must be installed first.
+
+Create private configuration files from the safe templates:
+
+```bash
+cp .env.example .env
+cp postgres.env.example postgres.env
+```
+
+Replace every placeholder. Keep `.env` for application settings and `postgres.env` for PostgreSQL initialization settings. For Compose, the hostname in `DATABASE_URL` is `db`, because `db` is the private database service name. The PostgreSQL database name, user, and password must match across the two files.
+
+Validate configuration and start PostgreSQL:
+
+```bash
+docker compose config --quiet
+docker compose up --detach db
+```
+
+Apply outstanding database migrations, then start the application:
+
+```bash
+docker compose run --rm migrate
+docker compose up --detach app
+```
+
+Verify readiness and container health:
+
+```bash
+curl -i http://127.0.0.1:8000/health/ready
+docker compose ps
+```
+
+The application is intentionally bound to `127.0.0.1:8000`. PostgreSQL has no host-published port and is reachable only by services on the Compose network.
+
+Stop the stack with:
+
+```bash
+docker compose down
+```
+
+This removes containers and the network but keeps the named database volume. Use `docker compose down -v` only when you intentionally want to delete local database data.
 
 ## Database migrations
 
