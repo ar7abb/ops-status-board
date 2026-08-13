@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0, 1, and 2 are complete. The local workload is verified and released as `v0.1`; Milestone 3 containerization is in progress.
+> **Current status:** Milestones 0-3 are complete. The local workload is released as `v0.1`; M04 focuses on CI and immutable images.
 
 ## Portfolio focus
 
@@ -145,6 +145,8 @@ This removes containers and the network but keeps the named database volume. Use
 
 Database schema changes are versioned with Alembic.
 
+The commands in this section assume PostgreSQL is reachable directly from WSL. When using Docker Compose, run schema commands through the temporary `migrate` service shown above.
+
 Apply all migrations:
 
 ```bash
@@ -165,9 +167,9 @@ python -m alembic check
 
 Use migration downgrades only after reviewing their data-loss risk. The initial `downgrade base` exercise is intended only for an empty disposable development database.
 
-## Start the application
+## Run without Docker
 
-Start the local FastAPI application from the repository root:
+Start FastAPI directly from WSL, rather than through Docker Compose:
 
 ```bash
 python -m uvicorn ops_status_board.app:create_app \
@@ -249,7 +251,7 @@ The application follows these security rules:
 - Unexpected failures return a generic response with a traceable request ID.
 - Database sessions roll back uncommitted work after failures.
 - Protected writes use constant-time token comparison.
-- PostgreSQL is bound to the local workstation during development.
+- PostgreSQL is not host-published by Docker Compose; only Compose services can reach it.
 
 ## Logging behavior
 
@@ -269,16 +271,29 @@ Logs do not include the complete URL, query parameters, request body, database p
 
 ## Verification
 
-Run the complete local verification suite before committing or opening a pull request:
+Run the following application-quality checks before committing or opening a pull request:
 
 ```bash
-python -m alembic check
 python -m pytest -q
 ruff check .
 ruff format --check .
 python -m pip check
 git diff --check
 ```
+
+Use the schema verification command that matches the database location:
+
+- **Host Python workflow:** use this when `DATABASE_URL` points to PostgreSQL reachable directly from WSL.
+
+  ```bash
+  python -m alembic check
+  ```
+
+- **Docker Compose workflow:** use this when `DATABASE_URL` uses the private Compose hostname `db`.
+
+  ```bash
+  docker compose run --rm migrate alembic check
+  ```
 
 ### Opt-in PostgreSQL integration tests
 
@@ -315,4 +330,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Begin M03-T01: inspect the Docker build context, choose a pinned base image, and define verification.
+Begin M04-T01: establish the CI quality and security pipeline for immutable images.
