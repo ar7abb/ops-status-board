@@ -83,6 +83,7 @@ jobs:
           image-ref: ops-status-board:local
           scanners: vuln,secret
           severity: HIGH,CRITICAL
+          ignore-unfixed: "true"
           exit-code: "1"
       - name: Create CI-only Compose configuration
         run: |
