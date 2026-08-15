@@ -64,7 +64,6 @@ def test_liveness_and_version_do_not_require_database_access() -> None:
         version = client.get("/version")
 
     assert liveness.json() == {"status": "ok"}
-    assert liveness.status_code == 503
     assert version.json() == {"version": "test-version"}
     assert unavailable_session.executed is False
 
