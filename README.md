@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0-3 are complete. The local workload is released as `v0.1`; M04 focuses on CI and immutable images.
+> **Current status:** Milestones 0-4 are complete. The containerized local stack, protected CI, and immutable GHCR images are released as `v0.2`.
 
 ## Portfolio focus
 
@@ -330,4 +330,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Begin M04-T01: establish the CI quality and security pipeline for immutable images.
+Begin M05-T01: create or verify the Ubuntu 24.04 VM recovery snapshot, network/address, and capacity baseline before server changes.
