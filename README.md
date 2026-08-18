@@ -67,6 +67,7 @@ The application and project repository live inside the WSL Linux filesystem. The
 - [`docs/blueprint-changelog.md`](docs/blueprint-changelog.md) records approved planning changes.
 - [`docs/glossary.md`](docs/glossary.md) defines project terminology.
 - [`docs/lessons-learned.md`](docs/lessons-learned.md) records selected technical lessons.
+- [`docs/recovery-runbook.md`](docs/recovery-runbook.md) documents PostgreSQL backup and clean restore verification.
 
 Private project state, learning notes, environment snapshots, credentials, and sensitive evidence remain outside the public repository.
 
