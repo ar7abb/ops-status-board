@@ -55,3 +55,6 @@ Thumbs.db
 evidence-private/
 tmp/
 temp/
+
+# Private Ansible inventory: real hosts and key paths stay outside Git
+ansible/inventory/hosts.ini
