@@ -1,0 +1,10 @@
+---
+- name: Configure the Ops Status Board server baseline
+  hosts: ops_servers
+  become: true
+  gather_facts: true
+
+  roles:
+    - base
+    - security
+    - docker

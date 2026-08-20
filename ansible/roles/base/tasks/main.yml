@@ -1,0 +1,13 @@
+---
+- name: Refresh the APT package index when it is older than one hour
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install base packages required by later roles
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present

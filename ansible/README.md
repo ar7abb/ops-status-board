@@ -1,4 +1,3 @@
-```markdown
 # Ansible automation
 
 This directory contains the version-controlled Ansible source for managing the
@@ -72,4 +71,71 @@ ansible \
 
 Use privilege escalation only for tasks that require it. Do not enable sudo
 globally in the inventory.
+
+## Baseline roles
+
+`playbooks/baseline.yml` applies the server baseline in this order:
+
+| Role | Responsibility |
+|---|---|
+| `base` | Refresh APT metadata and install `ca-certificates`, `curl`, and `gnupg`. |
+| `security` | Maintain SSH hardening and the UFW policy. |
+| `docker` | Maintain Docker's signed APT source, Docker Engine, Buildx, Compose, and the Docker service. |
+
+The repository-root `ansible.cfg` sets the local role search path and keeps SSH
+host-key checking enabled.
+
+Install the declared Ansible collection dependency before using the security
+role:
+
+```bash
+ansible-galaxy collection install -r ansible/requirements.yml
 ```
+
+The private inventory must define the trusted workstation source and allowed SSH
+accounts. Keep their real values outside Git:
+
+```ini
+ops_allowed_workstation_source=REPLACE_WITH_TRUSTED_WORKSTATION_IP
+ops_ssh_allowed_users=REPLACE_WITH_ALLOWED_SSH_USERS
+```
+
+The security role validates the complete SSH configuration before reloading SSH.
+It allows SSH and HTTP only from the trusted workstation, denies incoming
+traffic by default, allows outgoing traffic, and enables UFW at boot.
+
+The Docker role does not add the deployment user to the `docker` group. Docker
+daemon access is effectively root-level access, so operational Docker commands
+continue to use `sudo`.
+
+From the repository root, validate the baseline without contacting the server:
+
+```bash
+ansible-playbook \
+  -i ~/.config/ops-status-board-ansible/hosts.ini \
+  ansible/playbooks/baseline.yml \
+  --syntax-check
+```
+
+Preview changes safely:
+
+```bash
+ansible-playbook \
+  -i ~/.config/ops-status-board-ansible/hosts.ini \
+  ansible/playbooks/baseline.yml \
+  --check \
+  --diff \
+  --ask-become-pass
+```
+
+Apply the baseline only after reviewing the preview:
+
+```bash
+ansible-playbook \
+  -i ~/.config/ops-status-board-ansible/hosts.ini \
+  ansible/playbooks/baseline.yml \
+  --ask-become-pass
+```
+
+A repeat run should report `changed=0`. This proves the baseline is
+idempotent.

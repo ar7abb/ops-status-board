@@ -1,0 +1,75 @@
+---
+- name: Install SSH server and UFW
+  ansible.builtin.apt:
+    name:
+      - openssh-server
+      - ufw
+    state: present
+
+- name: Require private SSH and firewall variables
+  ansible.builtin.assert:
+    that:
+      - ops_allowed_workstation_source is defined
+      - ops_allowed_workstation_source | length > 0
+      - ops_ssh_allowed_users is defined
+      - ops_ssh_allowed_users | length > 0
+    fail_msg: >-
+      Define ops_allowed_workstation_source and ops_ssh_allowed_users
+      in the private inventory before managing server access.
+
+- name: Configure SSH hardening policy
+  ansible.builtin.copy:
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin no
+      AllowUsers {{ ops_ssh_allowed_users }}
+    dest: /etc/ssh/sshd_config.d/99-ops-status-board.conf
+    owner: root
+    group: root
+    mode: "0600"
+  register: security_ssh_hardening
+
+- name: Validate the complete SSH configuration
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+  when: security_ssh_hardening.changed
+
+- name: Reload SSH after a valid configuration change
+  ansible.builtin.service:
+    name: ssh
+    state: reloaded
+  when: security_ssh_hardening.changed
+
+- name: Allow SSH only from the trusted workstation
+  community.general.ufw:
+    rule: allow
+    direction: in
+    proto: tcp
+    port: "22"
+    src: "{{ ops_allowed_workstation_source }}"
+    comment: SSH from workstation
+
+- name: Allow HTTP only from the trusted workstation
+  community.general.ufw:
+    rule: allow
+    direction: in
+    proto: tcp
+    port: "80"
+    src: "{{ ops_allowed_workstation_source }}"
+    comment: HTTP from workstation
+
+- name: Deny incoming traffic by default
+  community.general.ufw:
+    direction: incoming
+    policy: deny
+
+- name: Allow outgoing traffic by default
+  community.general.ufw:
+    direction: outgoing
+    policy: allow
+
+- name: Enable UFW at boot
+  community.general.ufw:
+    state: enabled
+    logging: low
