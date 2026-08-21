@@ -81,6 +81,8 @@ globally in the inventory.
 | `base` | Refresh APT metadata and install `ca-certificates`, `curl`, and `gnupg`. |
 | `security` | Maintain SSH hardening and the UFW policy. |
 | `docker` | Maintain Docker's signed APT source, Docker Engine, Buildx, Compose, and the Docker service. |
+| `application` | Preserve the root-only runtime boundary, verify existing secret files, render the pinned Compose definition, and deploy after a Compose change. |
+| `nginx` | Manage the reverse-proxy site, enabled-site symlink, and safe Nginx validation/reload sequence. |
 
 The repository-root `ansible.cfg` sets the local role search path and keeps SSH
 host-key checking enabled.
@@ -139,3 +141,30 @@ ansible-playbook \
 
 A repeat run should report `changed=0`. This proves the baseline is
 idempotent.
+
+## Application deployment and drift correction
+The application Compose definition is rendered from
+`roles/application/templates/compose.yaml.j2`. Its image references are
+immutable digests stored in non-secret role defaults. Real `app.env` and
+`postgres.env` files remain root-owned on the managed server and are never
+stored in this repository.
+When the rendered Compose definition changes, Ansible validates it, pulls the
+pinned application image, runs migrations, and starts the application stack.
+The named PostgreSQL volume is retained; do not use `docker compose down -v`
+unless intentional database deletion is required.
+The Nginx site is rendered from
+`roles/nginx/templates/ops-status-board.conf.j2`. A configuration change
+notifies handlers that run `nginx -t` before reloading Nginx. A failed
+validation prevents the reload.
+To prove idempotence, apply the baseline twice. The immediate repeat run should
+report `changed=0`:
+```bash
+ansible-playbook \
+  -i ~/.config/ops-status-board-ansible/hosts.ini \
+  ansible/playbooks/baseline.yml \
+  --ask-become-pass
+```
+For a controlled drift-correction exercise, change only a harmless comment in
+the managed Nginx site file, then apply the baseline again. Ansible should
+restore the template, validate Nginx, reload it, and leave the health endpoint
+available.
