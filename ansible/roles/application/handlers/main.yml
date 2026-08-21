@@ -1,6 +1,8 @@
 ---
-- name: Pull immutable application images
-  ansible.builtin.command: docker compose -f {{ ops_compose_file }} pull app migrate
+- name: Pull immutable application and observability images
+  ansible.builtin.command: >
+    docker compose -f {{ ops_compose_file }} pull
+    app migrate prometheus grafana
   changed_when: false
   listen: deploy ops status board
 
@@ -10,6 +12,8 @@
   listen: deploy ops status board
 
 - name: Start the Ops Status Board stack
-  ansible.builtin.command: docker compose -f {{ ops_compose_file }} up --detach --wait app
+  ansible.builtin.command: >
+    docker compose -f {{ ops_compose_file }} up
+    --detach --wait app prometheus grafana
   changed_when: false
   listen: deploy ops status board

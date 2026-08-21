@@ -1,12 +1,12 @@
 # Ops Status Board Architecture
 
-> **Current status:** The locally verified FastAPI and PostgreSQL workload includes validated settings, request IDs, safe errors, structured/redacted logging, migrations, incident routes, dashboard, operational endpoints, and integration tests. Containers, server deployment, and AWS resources do not yet exist.
+> **Current status:** The FastAPI and PostgreSQL workload runs as pinned containers on a separate Ubuntu 24.04 VM. Ansible maintains the server baseline, application deployment, Nginx proxy, and private Prometheus/Grafana monitoring core. AWS resources do not yet exist.
 
 ## Architecture purpose
 
 The application is intentionally small. It creates an operable workload through which the learner can practise delivery, configuration, security, observation, failure, backup, recovery, and cost control.
 
-Repetitive FastAPI, SQLAlchemy, Jinja, and application-test plumbing may be Codex-scaffolded. The learner owns the Linux, container, pipeline, server, automation, observability, recovery, and cloud operations around it.
+The learner operates and verifies the Linux, container, pipeline, server, automation, observability, recovery, and cloud boundaries around the workload.
 
 ## Local request and operations path
 
@@ -24,7 +24,7 @@ FastAPI container <-> PostgreSQL container
         +--> scheduled backup -> clean restore drill
 ```
 
-The Ubuntu 24.04 WSL2 distribution is the workstation for code, Git, Docker, CI configuration, Ansible, and Terraform. The VirtualBox VM is rebuilt to supported Ubuntu 24.04 during M05 and remains a separate server for SSH, firewall, permissions, Nginx, systemd, deployment, monitoring, failure, and recovery practice.
+The Ubuntu 24.04 WSL2 distribution is the workstation for code, Git, Docker, CI configuration, Ansible, and Terraform. The VirtualBox VM was rebuilt to supported Ubuntu 24.04 during M05 and remains a separate server for SSH, firewall, permissions, Nginx, deployment, monitoring, failure, and recovery practice.
 
 ## Delivery path
 

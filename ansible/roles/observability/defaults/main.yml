@@ -1,0 +1,26 @@
+---
+# Official upstream development/nightly images, pinned after a clean
+# HIGH/CRITICAL Trivy scan on 2026-08-21.
+# Re-scan these exact images before every update.
+ops_prometheus_image: "prom/prometheus@sha256:ad35927d381b41cb12367d4a052c891b88ef63ef51b2635bd64384465179a774"
+ops_grafana_image: "grafana/grafana@sha256:0e129ffd8db39fda955414b47c490557e4ffb3f9dc8af08a6095770d79b49606"
+
+ops_observability_dir: "{{ ops_runtime_dir }}/observability"
+
+ops_prometheus_config_file: "{{ ops_observability_dir }}/prometheus/prometheus.yml"
+ops_grafana_provisioning_dir: "{{ ops_observability_dir }}/grafana/provisioning"
+ops_prometheus_metrics_token_file: "{{ ops_secret_dir }}/ops-status-board-metrics-token"
+
+ops_prometheus_retention_time: "7d"
+ops_prometheus_retention_size: "512MB"
+ops_prometheus_memory_limit: "256m"
+ops_prometheus_cpu_limit: "0.25"
+
+ops_grafana_memory_limit: "256m"
+ops_grafana_cpu_limit: "0.25"
+ops_grafana_bind_address: "127.0.0.1:3000:3000"
+
+ops_prometheus_data_dir: "{{ ops_observability_dir }}/prometheus-data"
+ops_grafana_data_dir: "{{ ops_observability_dir }}/grafana-data"
+ops_grafana_env_file: "{{ ops_secret_dir }}/grafana.env"
+ops_grafana_root_url: "http://{{ ansible_host }}/grafana/"

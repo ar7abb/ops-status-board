@@ -1,0 +1,118 @@
+---
+- name: Ensure the Prometheus configuration directory exists
+  ansible.builtin.file:
+    path: "{{ ops_observability_dir }}/prometheus"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure the Prometheus data directory exists
+  ansible.builtin.file:
+    path: "{{ ops_prometheus_data_dir }}"
+    state: directory
+    owner: "65532"
+    group: "65532"
+    mode: "0750"
+
+- name: Ensure the Grafana datasource provisioning directory exists
+  ansible.builtin.file:
+    path: "{{ ops_grafana_provisioning_dir }}/datasources"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ensure the Grafana data directory exists
+  ansible.builtin.file:
+    path: "{{ ops_grafana_data_dir }}"
+    state: directory
+    owner: "472"
+    group: "472"
+    mode: "0750"
+
+- name: Read private application runtime configuration without logging it
+  ansible.builtin.slurp:
+    src: "{{ ops_secret_dir }}/app.env"
+  register: observability_app_env
+  no_log: true
+
+- name: Extract the existing metrics credential without logging it
+  ansible.builtin.set_fact:
+    ops_metrics_bearer_token: >-
+      {{
+        (
+          observability_app_env.content
+          | b64decode
+          | regex_findall('(?m)^ADMIN_API_TOKEN=(.+)$')
+          | first
+          | default('')
+        )
+      }}
+  no_log: true
+
+- name: Require a metrics credential
+  ansible.builtin.assert:
+    that:
+      - ops_metrics_bearer_token | length > 0
+    fail_msg: "ADMIN_API_TOKEN is missing from the private application configuration."
+  no_log: true
+
+- name: Create the Prometheus metrics credential file
+  ansible.builtin.copy:
+    content: "{{ ops_metrics_bearer_token }}\n"
+    dest: "{{ ops_prometheus_metrics_token_file }}"
+    owner: "65532"
+    group: "65532"
+    mode: "0400"
+  no_log: true
+  notify: deploy ops status board
+
+- name: Inspect Grafana private runtime configuration
+  ansible.builtin.stat:
+    path: "{{ ops_grafana_env_file }}"
+  register: grafana_env_file
+
+- name: Generate a Grafana admin password once
+  ansible.builtin.command: openssl rand -base64 32
+  register: generated_grafana_password
+  changed_when: false
+  no_log: true
+  when: not grafana_env_file.stat.exists and not ansible_check_mode
+
+- name: Create Grafana private runtime configuration
+  ansible.builtin.copy:
+    content: |
+      GF_SECURITY_ADMIN_USER=opsadmin
+      GF_SECURITY_ADMIN_PASSWORD={{ generated_grafana_password.stdout }}
+      GF_SERVER_ROOT_URL={{ ops_grafana_root_url }}
+      GF_SERVER_SERVE_FROM_SUB_PATH=true
+    dest: "{{ ops_grafana_env_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  when: not grafana_env_file.stat.exists and not ansible_check_mode
+  notify: deploy ops status board
+
+- name: Render the Prometheus scrape configuration
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ ops_prometheus_config_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: deploy ops status board
+
+- name: Render the Grafana Prometheus datasource
+  ansible.builtin.template:
+    src: grafana-datasource.yml.j2
+    dest: "{{ ops_grafana_provisioning_dir }}/datasources/prometheus.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: deploy ops status board
+
+- name: Validate the complete Compose definition
+  ansible.builtin.command: docker compose -f {{ ops_compose_file }} config --quiet
+  changed_when: false

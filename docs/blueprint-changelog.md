@@ -5,10 +5,10 @@ This public changelog summarizes approved changes to the Ops Status Board learni
 ## 3.0.0 — 2026-08-09
 
 - Reframed the target as a Junior DevOps/CloudOps operator-first path lasting approximately 12–16 weeks.
-- Preserved every completed/cancelled task and its evidence through `M02-T04`; described M02-T04 honestly as Codex-scaffolded application code that the learner operated, tested, reviewed, and troubleshot.
+- Preserved every completed/cancelled task and its evidence through `M02-T04`; described M02-T04 honestly as application code that the learner operated, tested, reviewed, and troubleshot.
 - Replaced only the future catalog from `M02-T05`, reducing the broader prior plan to 69 tasks across M00–M12 and leaving 51 future tasks.
 - Made Linux, Git, Docker/Compose, CI/CD, server configuration, Ansible, Terraform, observability, recovery, security, cost, and AWS operations learner-owned.
-- Allowed Codex to scaffold repetitive FastAPI, SQLAlchemy, Jinja, application-test, and private-control boilerplate while requiring meaningful learner operation or modification in every task.
+- Allowed repetitive FastAPI, SQLAlchemy, Jinja, application-test, and private-control boilerplate to be scaffolded while requiring meaningful learner operation or modification in every task.
 - Made command coaching explicitly cover execution environment, purpose, changes, success evidence, and recovery.
 - Kept Prometheus/Grafana in the local core and selected Systems Manager plus CloudWatch for the small AWS core.
 - Moved Loki/Alloy, external email alerts, paid domain/DNS/HTTPS, permanent public hosting, automatic rollback, repeated drills, expanded audit, Kubernetes, managed databases, and load balancers to optional extensions.

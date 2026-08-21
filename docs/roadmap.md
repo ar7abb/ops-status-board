@@ -26,7 +26,7 @@ The core contains 69 sequential tasks across 13 milestones, M00–M12.
 
 The learner personally operates Linux, Git, containers, pipelines, Nginx, systemd, SSH/firewall controls, Ansible, Terraform, monitoring, recovery, and AWS. Each task includes at least one meaningful operation, investigation, troubleshooting step, or configuration/automation modification.
 
-Codex may scaffold repetitive FastAPI business logic, SQLAlchemy/Jinja plumbing, application-test fixtures, and private-control boilerplate. Evidence distinguishes authored/configured work from operated/reviewed/troubleshot work. Memorizing syntax is not required; understanding purpose, risk, verification, and recovery is required.
+Evidence distinguishes authored or configured work from operated, reviewed, and troubleshot work. Memorizing syntax is not required; understanding purpose, risk, verification, and recovery is required.
 
 ## Fixed core direction
 

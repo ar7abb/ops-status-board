@@ -82,6 +82,7 @@ globally in the inventory.
 | `security` | Maintain SSH hardening and the UFW policy. |
 | `docker` | Maintain Docker's signed APT source, Docker Engine, Buildx, Compose, and the Docker service. |
 | `application` | Preserve the root-only runtime boundary, verify existing secret files, render the pinned Compose definition, and deploy after a Compose change. |
+| `observability` | Maintain private Prometheus/Grafana configuration, credentials, persistence, capacity limits, and Compose validation. |
 | `nginx` | Manage the reverse-proxy site, enabled-site symlink, and safe Nginx validation/reload sequence. |
 
 The repository-root `ansible.cfg` sets the local role search path and keeps SSH
@@ -142,14 +143,32 @@ ansible-playbook \
 A repeat run should report `changed=0`. This proves the baseline is
 idempotent.
 
+## Observability core
+
+The observability role renders a bearer-authenticated Prometheus scrape job and
+a provisioned Grafana data source. Prometheus remains on the private Compose
+network. Grafana binds only to server loopback and is reached through Nginx at
+`/grafana/`.
+
+Prometheus and Grafana data use persistent, role-managed host directories.
+Grafana's administrator password is generated once on the managed server and
+stored in a root-only environment file. The metrics credential is derived from
+the existing protected application credential without logging its value; real
+credentials never enter Git.
+
+See [`../docs/observability.md`](../docs/observability.md) for the capacity
+budget, pinned-image decision, known limitations, and verification evidence.
+
 ## Application deployment and drift correction
 The application Compose definition is rendered from
 `roles/application/templates/compose.yaml.j2`. Its image references are
 immutable digests stored in non-secret role defaults. Real `app.env` and
 `postgres.env` files remain root-owned on the managed server and are never
 stored in this repository.
-When the rendered Compose definition changes, Ansible validates it, pulls the
-pinned application image, runs migrations, and starts the application stack.
+After the application and observability roles render their required files,
+Ansible validates the complete Compose definition. A notified deployment pulls
+the pinned images, runs migrations, and starts the application and monitoring
+stack.
 The named PostgreSQL volume is retained; do not use `docker compose down -v`
 unless intentional database deletion is required.
 The Nginx site is rendered from
