@@ -1,0 +1,52 @@
+---
+- name: Ensure the application runtime directory exists
+  ansible.builtin.file:
+    path: "{{ ops_runtime_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Ensure the private configuration directory exists
+  ansible.builtin.file:
+    path: "{{ ops_secret_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Inspect required private runtime configuration files
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ ops_secret_dir }}/app.env"
+    - "{{ ops_secret_dir }}/postgres.env"
+  register: application_secret_files
+
+- name: Require root-owned private runtime configuration files
+  ansible.builtin.assert:
+    that:
+      - item.stat.exists
+      - item.stat.isreg
+      - item.stat.pw_name == "root"
+      - item.stat.gr_name == "root"
+      - item.stat.mode == "0600"
+    fail_msg: "Required root-only runtime configuration is missing or unsafe: {{ item.item }}"
+  loop: "{{ application_secret_files.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Render the immutable Compose definition
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ ops_compose_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  register: application_compose_definition
+  notify: deploy ops status board
+
+- name: Validate a changed Compose definition
+  ansible.builtin.command: docker compose -f {{ ops_compose_file }} config --quiet
+  changed_when: false
+  when: application_compose_definition.changed

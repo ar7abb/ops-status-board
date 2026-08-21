@@ -1,0 +1,50 @@
+name: ops-status-board
+
+services:
+  db:
+    image: {{ ops_postgres_image }}
+    mem_limit: 512m
+    cpus: 0.50
+    env_file:
+      - {{ ops_secret_dir }}/postgres.env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  app:
+    image: {{ ops_application_image }}
+    mem_limit: 512m
+    cpus: 0.50
+    env_file:
+      - {{ ops_secret_dir }}/app.env
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  migrate:
+    profiles: ["maintenance"]
+    image: {{ ops_application_image }}
+    env_file:
+      - {{ ops_secret_dir }}/app.env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["alembic", "upgrade", "head"]
+
+volumes:
+  postgres-data:
