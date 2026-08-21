@@ -1,0 +1,33 @@
+---
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Render the Ops Status Board Nginx site
+  ansible.builtin.template:
+    src: ops-status-board.conf.j2
+    dest: /etc/nginx/sites-available/ops-status-board
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload nginx
+
+- name: Enable the Ops Status Board Nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/ops-status-board
+    dest: /etc/nginx/sites-enabled/ops-status-board
+    state: link
+  notify: reload nginx
+
+- name: Disable the default Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx
+
+- name: Ensure Nginx is enabled and running
+  ansible.builtin.service:
+    name: nginx
+    enabled: true
+    state: started

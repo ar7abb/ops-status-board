@@ -8,3 +8,5 @@
     - base
     - security
     - docker
+    - application
+    - nginx

@@ -1,0 +1,15 @@
+---
+- name: Pull immutable application images
+  ansible.builtin.command: docker compose -f {{ ops_compose_file }} pull app migrate
+  changed_when: false
+  listen: deploy ops status board
+
+- name: Apply outstanding database migrations
+  ansible.builtin.command: docker compose -f {{ ops_compose_file }} run --rm migrate
+  changed_when: false
+  listen: deploy ops status board
+
+- name: Start the Ops Status Board stack
+  ansible.builtin.command: docker compose -f {{ ops_compose_file }} up --detach --wait app
+  changed_when: false
+  listen: deploy ops status board
