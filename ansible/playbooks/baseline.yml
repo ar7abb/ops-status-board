@@ -9,4 +9,5 @@
     - security
     - docker
     - application
+    - observability
     - nginx

@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0-4 are complete. The containerized local stack, protected CI, and immutable GHCR images are released as `v0.2`.
+> **Current status:** Milestones 0-6 are complete and M07 observability work is in progress. The latest tagged release is `v0.2`; the Ansible-managed VM now runs the application behind Nginx with a private Prometheus and Grafana monitoring core.
 
 ## Portfolio focus
 
@@ -68,6 +68,7 @@ The application and project repository live inside the WSL Linux filesystem. The
 - [`docs/glossary.md`](docs/glossary.md) defines project terminology.
 - [`docs/lessons-learned.md`](docs/lessons-learned.md) records selected technical lessons.
 - [`docs/recovery-runbook.md`](docs/recovery-runbook.md) documents PostgreSQL backup and clean restore verification.
+- [`docs/observability.md`](docs/observability.md) records the local monitoring architecture, capacity budget, image-security decision, and verification evidence.
 
 Private project state, learning notes, environment snapshots, credentials, and sensitive evidence remain outside the public repository.
 
@@ -331,4 +332,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Begin M05-T01: create or verify the Ubuntu 24.04 VM recovery snapshot, network/address, and capacity baseline before server changes.
+Begin M07-T02: provision an operator dashboard from the verified Prometheus data source and record the queries that answer availability and traffic questions.

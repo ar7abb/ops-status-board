@@ -46,5 +46,36 @@ services:
         condition: service_healthy
     command: ["alembic", "upgrade", "head"]
 
+  prometheus:
+    image: {{ ops_prometheus_image }}
+    mem_limit: {{ ops_prometheus_memory_limit }}
+    cpus: {{ ops_prometheus_cpu_limit }}
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time={{ ops_prometheus_retention_time }}"
+      - "--storage.tsdb.retention.size={{ ops_prometheus_retention_size }}"
+    volumes:
+      - "{{ ops_prometheus_config_file }}:/etc/prometheus/prometheus.yml:ro"
+      - "{{ ops_prometheus_metrics_token_file }}:/run/secrets/ops-status-board-metrics-token:ro"
+      - "{{ ops_prometheus_data_dir }}:/prometheus"
+    restart: unless-stopped
+
+  grafana:
+    image: {{ ops_grafana_image }}
+    mem_limit: {{ ops_grafana_memory_limit }}
+    cpus: {{ ops_grafana_cpu_limit }}
+    env_file:
+      - {{ ops_grafana_env_file }}
+    ports:
+      - "{{ ops_grafana_bind_address }}"
+    volumes:
+      - "{{ ops_grafana_data_dir }}:/var/lib/grafana"
+      - "{{ ops_grafana_provisioning_dir }}:/etc/grafana/provisioning:ro"
+    depends_on:
+      prometheus:
+        condition: service_started
+    restart: unless-stopped
+
 volumes:
   postgres-data:

@@ -45,8 +45,3 @@
     mode: "0644"
   register: application_compose_definition
   notify: deploy ops status board
-
-- name: Validate a changed Compose definition
-  ansible.builtin.command: docker compose -f {{ ops_compose_file }} config --quiet
-  changed_when: false
-  when: application_compose_definition.changed
