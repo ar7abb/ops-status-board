@@ -1,0 +1,5 @@
+---
+- name: Restart Grafana after provisioning changes
+  ansible.builtin.command: docker compose -f {{ ops_compose_file }} restart grafana
+  changed_when: true
+  listen: restart grafana

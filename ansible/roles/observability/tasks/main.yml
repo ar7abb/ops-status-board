@@ -110,7 +110,9 @@
     owner: root
     group: root
     mode: "0644"
-  notify: deploy ops status board
+  notify:
+    - deploy ops status board
+    - restart grafana
 
 - name: Render the Grafana Prometheus datasource
   ansible.builtin.template:
@@ -119,7 +121,9 @@
     owner: root
     group: root
     mode: "0644"
-  notify: deploy ops status board
+  notify:
+    - deploy ops status board
+    - restart grafana
 
 - name: Render the Grafana dashboard provider
   ansible.builtin.template:
@@ -128,7 +132,9 @@
     owner: root
     group: root
     mode: "0644"
-  notify: deploy ops status board
+  notify:
+    - deploy ops status board
+    - restart grafana
 
 - name: Render the Ops Status Board dashboard
   ansible.builtin.template:
