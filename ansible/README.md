@@ -159,6 +159,23 @@ credentials never enter Git.
 See [`../docs/observability.md`](../docs/observability.md) for the capacity
 budget, pinned-image decision, known limitations, and verification evidence.
 
+## Operator dashboard
+
+Grafana provisions the read-only **Ops Status Board** dashboard from the
+repository. It uses the provisioned Prometheus data source rather than a
+browser-to-application connection.
+
+| Panel | PromQL query | Operator question answered |
+| --- | --- | --- |
+| Application availability | `min(up{job="ops-status-board"})` | Can Prometheus currently scrape the application? `1` means yes; `0` means no. |
+| HTTP request rate | `sum(rate(ops_status_board_http_requests_total[5m]))` | How many requests per second has the application handled recently? |
+| HTTP p95 request duration | `histogram_quantile(0.95, sum by (le) (rate(ops_status_board_http_request_duration_seconds_bucket[5m])))` | How slow are the slowest 5% of recent requests? |
+| HTTP 5xx rate | `sum(rate(ops_status_board_http_requests_total{status_code=~"5.."}[5m]))` | Is the application returning server errors? |
+
+The application excludes `/metrics` requests from its HTTP request metrics, so
+Prometheus scrapes do not appear as false operator traffic. Grafana remains
+loopback-only on the VM and is accessed through Nginx at `/grafana/`.
+
 ## Application deployment and drift correction
 The application Compose definition is rendered from
 `roles/application/templates/compose.yaml.j2`. Its image references are

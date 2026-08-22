@@ -1,5 +1,6 @@
 """HTTP-level tests for dashboard and operational routes."""
 
+import re
 from collections.abc import Generator
 
 from fastapi.testclient import TestClient
@@ -46,6 +47,16 @@ def build_client(session: ReadySession) -> TestClient:
 
     application.dependency_overrides[get_session] = get_test_session
     return TestClient(application)
+
+
+def metric_value(payload: str, metric_name: str, labels: str) -> float:
+    """Return one labelled Prometheus sample, or zero before it exists."""
+    match = re.search(
+        rf"^{re.escape(metric_name)}\{{{re.escape(labels)}\}} (?P<value>\S+)$",
+        payload,
+        flags=re.MULTILINE,
+    )
+    return float(match.group("value")) if match is not None else 0.0
 
 
 def test_dashboard_renders_an_accessible_empty_state() -> None:
@@ -121,3 +132,41 @@ def test_liveness_stays_healthy_when_real_database_connection_fails() -> None:
     assert readiness.status_code == 503
     assert readiness.json() == {"detail": "Not ready"}
     assert "127.0.0.1" not in readiness.text
+
+
+def test_metrics_record_real_requests_but_not_prometheus_scrapes() -> None:
+    labels = 'method="GET",route="/version",status_code="200"'
+
+    with build_client(ReadySession()) as client:
+        before = client.get(
+            "/metrics",
+            headers={"Authorization": "Bearer test-admin-token"},
+        ).text
+        version = client.get("/version")
+        after = client.get(
+            "/metrics",
+            headers={"Authorization": "Bearer test-admin-token"},
+        ).text
+
+    assert version.status_code == 200
+    assert (
+        metric_value(
+            after,
+            "ops_status_board_http_requests_total",
+            labels,
+        )
+        == metric_value(before, "ops_status_board_http_requests_total", labels) + 1
+    )
+    assert (
+        metric_value(
+            after,
+            "ops_status_board_http_request_duration_seconds_count",
+            labels,
+        )
+        == metric_value(
+            before,
+            "ops_status_board_http_request_duration_seconds_count",
+            labels,
+        )
+        + 1
+    )

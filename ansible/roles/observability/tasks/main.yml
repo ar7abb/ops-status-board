@@ -23,6 +23,14 @@
     group: root
     mode: "0755"
 
+- name: Ensure the Grafana dashboard provisioning directory exists
+  ansible.builtin.file:
+    path: "{{ ops_grafana_provisioning_dir }}/dashboards/ops-status-board"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Ensure the Grafana data directory exists
   ansible.builtin.file:
     path: "{{ ops_grafana_data_dir }}"
@@ -108,6 +116,26 @@
   ansible.builtin.template:
     src: grafana-datasource.yml.j2
     dest: "{{ ops_grafana_provisioning_dir }}/datasources/prometheus.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: deploy ops status board
+
+- name: Render the Grafana dashboard provider
+  ansible.builtin.template:
+    src: grafana-dashboards.yml.j2
+    dest: "{{ ops_grafana_provisioning_dir }}/dashboards/ops-status-board.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: deploy ops status board
+
+- name: Render the Ops Status Board dashboard
+  ansible.builtin.template:
+    src: dashboards/ops-status-board.json.j2
+    dest: >-
+      {{ ops_grafana_provisioning_dir }}/dashboards/ops-status-board/
+      ops-status-board.json
     owner: root
     group: root
     mode: "0644"

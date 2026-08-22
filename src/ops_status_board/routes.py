@@ -5,9 +5,10 @@ from secrets import compare_digest
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.templating import Jinja2Templates
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -20,7 +21,6 @@ api_router = APIRouter(prefix="/api/incidents", tags=["incidents"])
 
 dashboard_router = APIRouter(tags=["dashboard"])
 operations_router = APIRouter(tags=["operations"])
-
 
 templates = Jinja2Templates(
     directory=str(Path(__file__).parent / "templates"),
@@ -128,15 +128,13 @@ def version(request: Request) -> dict[str, str]:
 
 @operations_router.get(
     "/metrics",
-    response_class=PlainTextResponse,
     dependencies=[Depends(require_admin)],
 )
 def metrics() -> Response:
-    """Return the minimal privileged Prometheus-compatible metrics payload."""
-    return PlainTextResponse(
-        "# HELP ops_status_board_info Application process information.\n"
-        "# TYPE ops_status_board_info gauge\n"
-        "ops_status_board_info 1\n"
+    """Return the protected Prometheus metrics payload."""
+    return Response(
+        content=generate_latest(),
+        media_type=CONTENT_TYPE_LATEST,
     )
 
 

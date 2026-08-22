@@ -1,4 +1,4 @@
-"""Safe request tracing and application logging."""
+"""Safe request tracing, application logging, and HTTP Prometheus metrics."""
 
 import json
 import logging
@@ -11,6 +11,7 @@ from typing import Any
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
+from prometheus_client import Counter, Gauge, Histogram
 from pydantic import SecretStr
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import JSONResponse, Response
@@ -35,6 +36,24 @@ SENSITIVE_KEY_PARTS = (
 STANDARD_LOG_RECORD_FIELDS = frozenset(
     logging.LogRecord("", 0, "", 0, "", (), None).__dict__
 ) | {"message", "asctime"}
+
+APPLICATION_INFO = Gauge(
+    "ops_status_board_info",
+    "Application process information.",
+)
+APPLICATION_INFO.set(1)
+
+HTTP_REQUESTS_TOTAL = Counter(
+    "ops_status_board_http_requests_total",
+    "Total HTTP requests handled by Ops Status Board.",
+    labelnames=("method", "route", "status_code"),
+)
+
+HTTP_REQUEST_DURATION_SECONDS = Histogram(
+    "ops_status_board_http_request_duration_seconds",
+    "HTTP request duration in seconds for Ops Status Board.",
+    labelnames=("method", "route", "status_code"),
+)
 
 _request_id: ContextVar[str] = ContextVar("request_id", default="-")
 
@@ -142,6 +161,31 @@ def configure_logging(
     return logger
 
 
+def metric_route(request: Request) -> str:
+    """Return a bounded route label without exposing raw path values."""
+    route = request.scope.get("route")
+    route_path = getattr(route, "path", None)
+    return route_path if isinstance(route_path, str) else "unmatched"
+
+
+def record_request_metrics(
+    request: Request,
+    response: Response,
+    duration_seconds: float,
+) -> None:
+    """Record one completed non-metrics HTTP request."""
+    if request.url.path == "/metrics":
+        return
+
+    labels = {
+        "method": request.method,
+        "route": metric_route(request),
+        "status_code": str(response.status_code),
+    }
+    HTTP_REQUESTS_TOTAL.labels(**labels).inc()
+    HTTP_REQUEST_DURATION_SECONDS.labels(**labels).observe(duration_seconds)
+
+
 class RequestContextMiddleware(BaseHTTPMiddleware):
     """Trace requests and convert unexpected failures into safe responses."""
 
@@ -170,14 +214,17 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
                     },
                 )
 
+            duration_seconds = perf_counter() - started
             response.headers[REQUEST_ID_HEADER] = request_id
+            record_request_metrics(request, response, duration_seconds)
+
             logger.info(
                 "request_completed",
                 extra={
                     "method": request.method,
                     "path": request.url.path,
                     "status_code": response.status_code,
-                    "duration_ms": round((perf_counter() - started) * 1000, 2),
+                    "duration_ms": round(duration_seconds * 1000, 2),
                 },
             )
             return response
