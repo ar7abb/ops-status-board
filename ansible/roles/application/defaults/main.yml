@@ -4,4 +4,4 @@ ops_secret_dir: /etc/ops-status-board
 ops_compose_file: "{{ ops_runtime_dir }}/compose.yaml"
 
 ops_postgres_image: "postgres:16.14@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
-ops_application_image: "ghcr.io/ar7abb/ops-status-board@sha256:a9f4bbbe90e2ef9ea20a09c0b44a22d956f79b7aefaf806cdfb44c25b2cfdb4c"
+ops_application_image: "ghcr.io/ar7abb/ops-status-board@sha256:217639c358b99dc0ab08ae4777a0955c668f6f891c4d59a43d31420861ebf48f"
