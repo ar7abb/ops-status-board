@@ -294,7 +294,7 @@
     mode: "0644"
   notify:
     - deploy ops status board
-    - restart grafana
+    - restart prometheus
 
 - name: Render the Grafana Prometheus datasource
   ansible.builtin.template:
