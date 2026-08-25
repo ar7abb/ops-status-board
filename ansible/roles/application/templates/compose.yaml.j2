@@ -61,6 +61,31 @@ services:
       - "{{ ops_prometheus_data_dir }}:/prometheus"
     restart: unless-stopped
 
+  node-exporter:
+    image: {{ ops_node_exporter_image }}
+    mem_limit: {{ ops_node_exporter_memory_limit }}
+    cpus: {{ ops_node_exporter_cpu_limit }}
+    command:
+      - "--path.rootfs=/host"
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--no-collector.netdev"
+    pid: host
+    volumes:
+      - "/:/host:ro,rslave"
+    restart: unless-stopped
+
+  postgres-exporter:
+    image: {{ ops_postgres_exporter_image }}
+    mem_limit: {{ ops_postgres_exporter_memory_limit }}
+    cpus: {{ ops_postgres_exporter_cpu_limit }}
+    env_file:
+      - {{ ops_postgres_exporter_env_file }}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
   grafana:
     image: {{ ops_grafana_image }}
     mem_limit: {{ ops_grafana_memory_limit }}

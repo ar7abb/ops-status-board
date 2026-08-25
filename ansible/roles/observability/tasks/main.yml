@@ -45,6 +45,44 @@
   register: observability_app_env
   no_log: true
 
+- name: Read private PostgreSQL runtime configuration without logging it
+  ansible.builtin.slurp:
+    src: "{{ ops_secret_dir }}/postgres.env"
+  register: observability_postgres_env
+  no_log: true
+
+- name: Extract the PostgreSQL administrative identity without logging it
+  ansible.builtin.set_fact:
+    ops_postgres_admin_user: >-
+      {{
+        (
+          observability_postgres_env.content
+          | b64decode
+          | regex_findall('(?m)^POSTGRES_USER=(.+)$')
+          | first
+          | default('')
+        )
+      }}
+    ops_postgres_database: >-
+      {{
+        (
+          observability_postgres_env.content
+          | b64decode
+          | regex_findall('(?m)^POSTGRES_DB=(.+)$')
+          | first
+          | default('')
+        )
+      }}
+  no_log: true
+
+- name: Require the PostgreSQL administrative identity
+  ansible.builtin.assert:
+    that:
+      - ops_postgres_admin_user | length > 0
+      - ops_postgres_database | length > 0
+    fail_msg: "POSTGRES_USER or POSTGRES_DB is missing from private PostgreSQL configuration."
+  no_log: true
+
 - name: Extract the existing metrics credential without logging it
   ansible.builtin.set_fact:
     ops_metrics_bearer_token: >-
@@ -65,6 +103,150 @@
       - ops_metrics_bearer_token | length > 0
     fail_msg: "ADMIN_API_TOKEN is missing from the private application configuration."
   no_log: true
+- name: Inspect PostgreSQL exporter private runtime configuration
+  ansible.builtin.stat:
+    path: "{{ ops_postgres_exporter_env_file }}"
+  register: postgres_exporter_env_file
+  no_log: true
+
+- name: Generate a PostgreSQL exporter password once
+  ansible.builtin.command: openssl rand -hex 32
+  register: generated_postgres_exporter_password
+  changed_when: false
+  no_log: true
+  when: not postgres_exporter_env_file.stat.exists and not ansible_check_mode
+
+- name: Create PostgreSQL exporter private runtime configuration
+  ansible.builtin.copy:
+    content: |
+      POSTGRES_EXPORTER_PASSWORD={{ generated_postgres_exporter_password.stdout }}
+      DATA_SOURCE_NAME=postgresql://{{ ops_postgres_exporter_db_user }}:{{ generated_postgres_exporter_password.stdout }}@db:5432/{{ ops_postgres_database }}?sslmode=disable
+    dest: "{{ ops_postgres_exporter_env_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  when: not postgres_exporter_env_file.stat.exists and not ansible_check_mode
+  notify: deploy ops status board
+
+- name: Read PostgreSQL exporter private runtime configuration without logging it
+  ansible.builtin.slurp:
+    src: "{{ ops_postgres_exporter_env_file }}"
+  register: postgres_exporter_env
+  no_log: true
+  when: postgres_exporter_env_file.stat.exists or not ansible_check_mode
+
+- name: Extract the PostgreSQL exporter password without logging it
+  ansible.builtin.set_fact:
+    ops_postgres_exporter_password: >-
+      {{
+        (
+          postgres_exporter_env.content
+          | b64decode
+          | regex_findall('(?m)^POSTGRES_EXPORTER_PASSWORD=(.+)$')
+          | first
+          | default('')
+        )
+      }}
+  no_log: true
+  when: postgres_exporter_env is defined
+
+- name: Require PostgreSQL exporter private runtime configuration
+  ansible.builtin.assert:
+    that:
+      - ops_postgres_exporter_password | length > 0
+    fail_msg: "PostgreSQL exporter private runtime configuration is missing or invalid."
+  no_log: true
+  when: ops_postgres_exporter_password is defined
+
+- name: Inspect the PostgreSQL exporter role
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ ops_compose_file }}"
+      - exec
+      - -T
+      - db
+      - psql
+      - -U
+      - "{{ ops_postgres_admin_user }}"
+      - -d
+      - "{{ ops_postgres_database }}"
+      - -tAc
+      - "SELECT 1 FROM pg_roles WHERE rolname = '{{ ops_postgres_exporter_db_user }}';"
+  register: postgres_exporter_role
+  changed_when: false
+  no_log: true
+  when: not ansible_check_mode
+
+- name: Create the least-privilege PostgreSQL exporter role
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ ops_compose_file }}"
+      - exec
+      - -T
+      - db
+      - psql
+      - -U
+      - "{{ ops_postgres_admin_user }}"
+      - -d
+      - "{{ ops_postgres_database }}"
+      - -c
+      - "CREATE ROLE {{ ops_postgres_exporter_db_user }} LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION NOBYPASSRLS PASSWORD '{{ ops_postgres_exporter_password }}';"
+  no_log: true
+  when:
+    - not ansible_check_mode
+    - (postgres_exporter_role.stdout | trim) != "1"
+
+- name: Inspect PostgreSQL exporter permissions
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ ops_compose_file }}"
+      - exec
+      - -T
+      - db
+      - psql
+      - -U
+      - "{{ ops_postgres_admin_user }}"
+      - -d
+      - "{{ ops_postgres_database }}"
+      - -tAc
+      - "SELECT (has_database_privilege('{{ ops_postgres_exporter_db_user }}', '{{ ops_postgres_database }}', 'CONNECT') AND pg_has_role('{{ ops_postgres_exporter_db_user }}', 'pg_monitor', 'member'))::int;"
+  register: postgres_exporter_permissions
+  changed_when: false
+  no_log: true
+  when: not ansible_check_mode
+
+- name: Grant PostgreSQL monitoring permissions to the exporter role
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ ops_compose_file }}"
+      - exec
+      - -T
+      - db
+      - psql
+      - -U
+      - "{{ ops_postgres_admin_user }}"
+      - -d
+      - "{{ ops_postgres_database }}"
+      - -c
+      - "GRANT CONNECT ON DATABASE {{ ops_postgres_database }} TO {{ ops_postgres_exporter_db_user }}; GRANT pg_monitor TO {{ ops_postgres_exporter_db_user }};"
+  no_log: true
+  when:
+    - not ansible_check_mode
+    - (postgres_exporter_permissions.stdout | trim) != "1"
+
 
 - name: Create the Prometheus metrics credential file
   ansible.builtin.copy:
@@ -150,3 +332,4 @@
 - name: Validate the complete Compose definition
   ansible.builtin.command: docker compose -f {{ ops_compose_file }} config --quiet
   changed_when: false
+  when: postgres_exporter_env_file.stat.exists or not ansible_check_mode
