@@ -1,0 +1,11 @@
+groups:
+  - name: ops-status-board
+    rules:
+      - alert: OpsStatusBoardUnavailable
+        expr: up{job="ops-status-board"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Ops Status Board is unreachable
+          description: Prometheus has been unable to scrape the application for at least one minute.

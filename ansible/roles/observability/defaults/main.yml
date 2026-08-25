@@ -10,6 +10,7 @@ ops_postgres_exporter_image: "dhi.io/postgres-exporter@sha256:d7471e1ae929237fa3
 ops_observability_dir: "{{ ops_runtime_dir }}/observability"
 
 ops_prometheus_config_file: "{{ ops_observability_dir }}/prometheus/prometheus.yml"
+ops_prometheus_alerts_file: "{{ ops_observability_dir }}/prometheus/alerts.yml"
 ops_grafana_provisioning_dir: "{{ ops_observability_dir }}/grafana/provisioning"
 ops_prometheus_metrics_token_file: "{{ ops_secret_dir }}/ops-status-board-metrics-token"
 ops_postgres_exporter_env_file: "{{ ops_secret_dir }}/postgres-exporter.env"
