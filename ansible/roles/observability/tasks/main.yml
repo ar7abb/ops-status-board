@@ -157,7 +157,7 @@
       - ops_postgres_exporter_password | length > 0
     fail_msg: "PostgreSQL exporter private runtime configuration is missing or invalid."
   no_log: true
-  when: ops_postgres_exporter_password is defined
+  when: postgres_exporter_env_file.stat.exists or not ansible_check_mode
 
 - name: Inspect the PostgreSQL exporter role
   ansible.builtin.command:
