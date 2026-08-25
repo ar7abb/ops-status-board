@@ -3,3 +3,7 @@
   ansible.builtin.command: docker compose -f {{ ops_compose_file }} restart grafana
   changed_when: true
   listen: restart grafana
+- name: Restart Prometheus after scrape configuration changes
+  ansible.builtin.command: docker compose -f {{ ops_compose_file }} restart prometheus
+  changed_when: true
+  listen: restart prometheus
