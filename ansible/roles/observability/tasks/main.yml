@@ -296,6 +296,36 @@
     - deploy ops status board
     - restart prometheus
 
+- name: Render the Prometheus alert rules
+  ansible.builtin.template:
+    src: alerts.yml.j2
+    dest: "{{ ops_prometheus_alerts_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  register: prometheus_alert_rules
+  notify: restart prometheus
+
+- name: Validate changed Prometheus alert rules
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ ops_compose_file }}"
+      - run
+      - --rm
+      - --no-deps
+      - --entrypoint
+      - promtool
+      - prometheus
+      - check
+      - rules
+      - /etc/prometheus/alerts.yml
+  changed_when: false
+  when:
+    - prometheus_alert_rules.changed
+    - not ansible_check_mode
 - name: Render the Grafana Prometheus datasource
   ansible.builtin.template:
     src: grafana-datasource.yml.j2

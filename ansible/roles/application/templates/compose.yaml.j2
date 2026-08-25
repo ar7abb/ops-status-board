@@ -57,6 +57,7 @@ services:
       - "--storage.tsdb.retention.size={{ ops_prometheus_retention_size }}"
     volumes:
       - "{{ ops_prometheus_config_file }}:/etc/prometheus/prometheus.yml:ro"
+      - "{{ ops_prometheus_alerts_file }}:/etc/prometheus/alerts.yml:ro"
       - "{{ ops_prometheus_metrics_token_file }}:/run/secrets/ops-status-board-metrics-token:ro"
       - "{{ ops_prometheus_data_dir }}:/prometheus"
     restart: unless-stopped
