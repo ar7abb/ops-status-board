@@ -4,6 +4,15 @@
     name: nginx
     state: present
 
+- name: Install the Ops Status Board structured access-log format
+  ansible.builtin.copy:
+    src: ops-status-board-log-format.conf
+    dest: /etc/nginx/conf.d/ops-status-board-log-format.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: reload nginx
+
 - name: Render the Ops Status Board Nginx site
   ansible.builtin.template:
     src: ops-status-board.conf.j2
