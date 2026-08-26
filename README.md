@@ -332,4 +332,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Begin M07-T05: schedule backups, restore into a clean database, measure recovery, write a postmortem, and publish v0.3. External alert notifications remain optional backlog rather than a core blocker.
+Begin M08-T01: verify AWS account, cost, and root-security boundaries before creating any cloud workload resources. The manual AWS lab begins only after this gate is understood and explicitly approved.
