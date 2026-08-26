@@ -2,6 +2,7 @@ server {
     listen 80;
     listen [::]:80;
     server_name {{ ops_nginx_server_name }};
+    access_log /var/log/nginx/ops-status-board.access.log ops_status_board_json;
 
     location = /grafana {
         return 301 /grafana/;

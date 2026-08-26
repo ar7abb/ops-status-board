@@ -145,8 +145,9 @@ container.
 
 ## Remaining M07 boundaries
 
-- M07-T03 still must trace one real failed request across the safe response,
-  request ID, application container log, Nginx evidence, and protected details.
+- M07-T03 traced one controlled 404 across the safe client response, FastAPI
+  structured JSON log, and Nginx structured access log using one request ID;
+  normal readiness passed afterward.
 - M07-T05 still must schedule backups, restore into a clean database, measure
   recovery, write a postmortem, and publish `v0.3`.
 - The local HTTP route does not provide TLS; UFW restricts it to the trusted
