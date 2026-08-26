@@ -23,3 +23,22 @@ Git author identity records who created a commit. SSH authentication separately 
 ## Safe repository migration
 
 Copy-first migration preserves a recovery source until destination hashes match. Ignore rules reduce accidental staging, but they do not replace reviewing `git status` and the staged diff. Public repositories should contain product code and curated technical evidence, while raw coaching history, detailed environment state, credentials, database dumps, and sensitive evidence remain private and outside every Git worktree.
+
+## Container restart versus recreation
+
+A container restart starts the same container again with the same image and
+mount configuration. It does not apply a newly rendered Compose bind mount or a
+new image reference. When the desired Compose definition changes, Compose must
+recreate the affected service so the new container receives the new mounts,
+environment, image, or command. This distinction mattered when Prometheus gained
+its alert-rule file: configuration validation succeeded, but a simple restart
+could not attach a mount that the old container had never been created with.
+
+## Validating alternate container commands
+
+Some images define an entrypoint for their normal server process. Appending a
+tool name to `docker compose run` can therefore pass that name as an argument to
+the server instead of launching the tool. The Prometheus validation task had to
+override the image entrypoint explicitly before running `promtool`. Validation
+commands should prove that the intended executable actually ran, not merely
+that a container started.
