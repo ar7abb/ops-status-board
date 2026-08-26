@@ -1,116 +1,92 @@
 # PostgreSQL Backup and Restore Runbook
 
-This runbook covers logical backup and clean restore verification for the
-PostgreSQL database used by Ops Status Board.
+This runbook covers the scheduled logical PostgreSQL backups and clean restore
+verification for Ops Status Board.
 
-It is designed for the Ubuntu server deployment whose root-owned Compose file
-is `/opt/ops-status-board/compose.yaml`.
+The deployment uses a root-owned Compose file at
+`/opt/ops-status-board/compose.yaml`.
 
-## Safety rules
+## Scope and safety rules
 
-- Never print or copy the contents of the private environment files.
-- Never restore a test archive over the live `ops_status_board` database.
-- Verify restores in the disposable `ops_status_board_restore_check` database.
-- Do not run `docker compose down --volumes`; it deletes PostgreSQL data.
-- Record the backup filename, UTC creation time, size, and SHA-256 checksum.
-- A backup is not considered verified until a clean restore succeeds.
+- These archives contain PostgreSQL schema and data only. They do not back up
+  the whole VM, Docker images, Nginx configuration, Grafana data, or secrets.
+- Never print or copy private environment-file contents.
+- Never restore an archive over the live `ops_status_board` database.
+- Restore tests use the separate `ops_status_board_restore_check` database.
+- Never run `docker compose down --volumes`; it deletes PostgreSQL data.
+- A backup is not considered verified until its checksum and a clean restore
+  both succeed.
 
-## Check service health
+## Scheduled backup policy
 
-```bash
-sudo docker compose \
-  -f /opt/ops-status-board/compose.yaml \
-  ps
-```
+The root-owned systemd timer `ops-status-board-backup.timer` starts one logical
+backup shortly after a VM boot, then repeats after each successful 24-hour
+interval while the VM remains online.
 
-The `db` container must be healthy before starting.
+The backup service:
 
-## Create a logical backup
+- writes custom-format archives to `/var/backups/ops-status-board`;
+- creates a SHA-256 checksum beside each archive;
+- keeps the seven newest managed archives;
+- uses a lock so two backups cannot run at once; and
+- removes its temporary archive from the database container.
 
-Create the protected backup directory:
+Because this is a lab VM that is not always powered on, its practical recovery
+point objective is based on the most recent successful backup, not a guaranteed
+calendar schedule while the VM is off.
 
-```bash
-sudo install -d \
-  -m 700 \
-  -o root \
-  -g root \
-  /var/backups/ops-status-board
-```
-
-Choose a timestamped backup filename:
+## Inspect the schedule and last run
 
 ```bash
-backup_stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-backup_path="/var/backups/ops-status-board/ops-status-board-${backup_stamp}.dump"
+sudo systemctl list-timers --all --no-pager | \
+  grep ops-status-board-backup
+
+sudo journalctl \
+  -u ops-status-board-backup.service \
+  --no-pager \
+  --since "7 days ago"
 ```
 
-Create a custom-format PostgreSQL archive inside the database container:
+A one-shot service normally becomes inactive after a successful backup. The
+timer remaining active is the important scheduling evidence.
+
+To intentionally create one new backup for a controlled test:
 
 ```bash
-sudo docker compose \
-  -f /opt/ops-status-board/compose.yaml \
-  exec -T db \
-  sh -c 'pg_dump \
-    --username="$POSTGRES_USER" \
-    --dbname="$POSTGRES_DB" \
-    --format=custom \
-    --file=/tmp/ops-status-board.dump'
+sudo systemctl start ops-status-board-backup.service
 ```
 
-Copy the archive to the protected host directory:
+## Verify the newest archive
+
+Select the newest managed archive without printing private configuration:
 
 ```bash
-sudo docker compose \
-  -f /opt/ops-status-board/compose.yaml \
-  cp db:/tmp/ops-status-board.dump "$backup_path"
+latest_backup="$(
+  sudo find /var/backups/ops-status-board \
+    -maxdepth 1 \
+    -type f \
+    -name 'ops-status-board-????????T??????Z.dump' \
+    -printf '%T@ %p\n' |
+    sort -nr |
+    head -n 1 |
+    cut -d' ' -f2-
+)"
 
-sudo chmod 600 "$backup_path"
+printf '%s\n' "$latest_backup"
+sudo sha256sum --check "${latest_backup}.sha256"
 ```
 
-Record its metadata and checksum:
-
-```bash
-sudo stat -c '%A %U:%G %s bytes %y %n' "$backup_path"
-sudo sha256sum "$backup_path"
-```
-
-Remove only the temporary container copy:
-
-```bash
-sudo docker compose \
-  -f /opt/ops-status-board/compose.yaml \
-  exec -T db \
-  rm /tmp/ops-status-board.dump
-```
+The checksum result must end in `OK`.
 
 ## Verify a clean restore
 
-Set `backup_path` to the archive being tested:
+Choose a protected archive and a disposable database name:
 
 ```bash
 backup_path="/var/backups/ops-status-board/REPLACE_WITH_BACKUP_NAME.dump"
 ```
 
-Copy it into the database container:
-
-```bash
-sudo docker compose \
-  -f /opt/ops-status-board/compose.yaml \
-  cp "$backup_path" db:/tmp/restore-check.dump
-```
-
-Confirm that PostgreSQL can read the archive:
-
-```bash
-sudo docker compose \
-  -f /opt/ops-status-board/compose.yaml \
-  exec -T db \
-  sh -c 'set -eu
-    pg_restore --list /tmp/restore-check.dump > /tmp/restore-check.list
-    head -n 20 /tmp/restore-check.list'
-```
-
-Confirm that the disposable database does not already exist:
+Confirm the disposable database does not already exist:
 
 ```bash
 sudo docker compose \
@@ -121,10 +97,19 @@ sudo docker compose \
     --dbname=postgres \
     --tuples-only \
     --no-align \
-    --command="SELECT datname FROM pg_database WHERE datname = \$\$ops_status_board_restore_check\$\$;"'
+    --command "SELECT datname FROM pg_database;"' |
+  grep -Fx 'ops_status_board_restore_check' || true
 ```
 
 The command must return no database name before continuing.
+
+Copy the archive into the database container temporarily:
+
+```bash
+sudo docker compose \
+  -f /opt/ops-status-board/compose.yaml \
+  cp "$backup_path" db:/tmp/ops-status-board-restore-check.dump
+```
 
 Create the empty disposable database:
 
@@ -134,11 +119,10 @@ sudo docker compose \
   exec -T db \
   sh -c 'createdb \
     --username="$POSTGRES_USER" \
-    --template=template0 \
     ops_status_board_restore_check'
 ```
 
-Restore the archive:
+Restore into that database only:
 
 ```bash
 sudo docker compose \
@@ -147,13 +131,11 @@ sudo docker compose \
   sh -c 'pg_restore \
     --username="$POSTGRES_USER" \
     --dbname=ops_status_board_restore_check \
-    --no-owner \
-    --no-privileges \
     --exit-on-error \
-    /tmp/restore-check.dump'
+    /tmp/ops-status-board-restore-check.dump'
 ```
 
-Verify the restored database:
+Verify the restored schema and data are queryable:
 
 ```bash
 sudo docker compose \
@@ -162,14 +144,17 @@ sudo docker compose \
   sh -c 'psql \
     --username="$POSTGRES_USER" \
     --dbname=ops_status_board_restore_check \
-    --command="SELECT current_database() AS database, count(*) AS incidents FROM incidents;"'
+    --tuples-only \
+    --no-align \
+    --command "SELECT current_database(), count(*) FROM incidents;"'
 ```
 
-The restored count must match the source database at backup time.
+The result must name `ops_status_board_restore_check`. The incident count must
+match the live database at the time the archive was created.
 
-## Clean up the verification database
+## Clean up after the restore test
 
-Remove only the disposable database:
+Delete only the disposable database and temporary container copy:
 
 ```bash
 sudo docker compose \
@@ -177,37 +162,31 @@ sudo docker compose \
   exec -T db \
   sh -c 'dropdb \
     --username="$POSTGRES_USER" \
-    ops_status_board_restore_check'
+    ops_status_board_restore_check && \
+    rm -f /tmp/ops-status-board-restore-check.dump'
 ```
 
-Remove only the temporary archive copy inside the container:
-
-```bash
-sudo docker compose \
-  -f /opt/ops-status-board/compose.yaml \
-  exec -T db \
-  rm -f /tmp/restore-check.dump /tmp/restore-check.list
-```
-
-Confirm the application is still ready:
+Confirm the live application remains ready:
 
 ```bash
 curl --fail --show-error --silent \
   http://127.0.0.1/health/ready
 ```
 
-## Recovery evidence
+## Recovery evidence and postmortem notes
 
-For every verification exercise, record privately:
+Record privately after every restore verification:
 
-- backup filename and UTC timestamp;
-- archive size;
-- SHA-256 checksum;
-- source incident count;
+- archive filename, UTC timestamp, size, and checksum result;
+- timer and service result;
+- disposable restore database name;
 - restored incident count;
-- restore result;
 - cleanup result; and
 - final application readiness result.
 
-Do not commit environment files, credentials, tokens, private IP addresses, or
-private recovery evidence.
+For a failed scheduled backup, preserve the service journal, identify whether
+the database or Docker service was unavailable, fix the cause, run one
+controlled backup, verify its checksum, and repeat the clean restore test.
+
+Do not commit credentials, tokens, private addresses, private recovery
+evidence, or archive contents.

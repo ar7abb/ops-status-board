@@ -1,0 +1,46 @@
+---
+- name: Ensure the protected backup directory exists
+  ansible.builtin.file:
+    path: "{{ ops_backup_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Install the Ops Status Board backup script
+  ansible.builtin.template:
+    src: ops-status-board-backup.sh.j2
+    dest: "{{ ops_backup_script }}"
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Install the Ops Status Board backup service
+  ansible.builtin.template:
+    src: ops-status-board-backup.service.j2
+    dest: "/etc/systemd/system/{{ ops_backup_service_name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  register: backup_service_unit
+
+- name: Install the Ops Status Board backup timer
+  ansible.builtin.template:
+    src: ops-status-board-backup.timer.j2
+    dest: "/etc/systemd/system/{{ ops_backup_timer_name }}"
+    owner: root
+    group: root
+    mode: "0644"
+  register: backup_timer_unit
+
+- name: Reload systemd after backup unit changes
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: backup_service_unit.changed or backup_timer_unit.changed
+
+- name: Enable and start the backup timer
+  ansible.builtin.systemd:
+    name: "{{ ops_backup_timer_name }}"
+    enabled: true
+    state: started
+  when: not ansible_check_mode

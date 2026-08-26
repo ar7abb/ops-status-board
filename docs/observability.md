@@ -148,8 +148,9 @@ container.
 - M07-T03 traced one controlled 404 across the safe client response, FastAPI
   structured JSON log, and Nginx structured access log using one request ID;
   normal readiness passed afterward.
-- M07-T05 still must schedule backups, restore into a clean database, measure
-  recovery, write a postmortem, and publish `v0.3`.
+- M07-T05 scheduled a protected logical PostgreSQL backup, verified its
+  checksum, restored it into a clean disposable database, removed test
+  artifacts, and recorded the recovery postmortem.
 - The local HTTP route does not provide TLS; UFW restricts it to the trusted
   workstation.
 - Loki/Alloy, external alert delivery, advanced dashboard expansion, and a
