@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0-6 are complete. In M07, the capacity/monitoring core, application-host-database dashboards, alert/outage drill, and structured-log/request-ID investigation are complete; scheduled recovery is next. The latest tagged release is v0.2; v0.3 follows the remaining recovery work.
+> **Current status:** Milestones 0–7 are complete. M07 added Prometheus and Grafana monitoring, application/host/database dashboards, alert and outage evidence, structured request-ID tracing, and scheduled PostgreSQL backup with a clean restore drill. The next milestone is AWS safety and a manual cloud lab. The v0.3 release will tag this verified state.
 
 ## Portfolio focus
 

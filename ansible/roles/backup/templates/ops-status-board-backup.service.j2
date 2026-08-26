@@ -1,0 +1,12 @@
+[Unit]
+Description=Create an Ops Status Board PostgreSQL logical backup
+Wants=docker.service
+After=docker.service
+ConditionPathExists={{ ops_compose_file }}
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+UMask=0077
+ExecStart={{ ops_backup_script }}

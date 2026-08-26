@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule Ops Status Board PostgreSQL backups
+
+[Timer]
+OnBootSec={{ ops_backup_on_boot_delay }}
+OnUnitActiveSec={{ ops_backup_interval }}
+AccuracySec=1min
+Unit={{ ops_backup_service_name }}
+
+[Install]
+WantedBy=timers.target
