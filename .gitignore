@@ -36,11 +36,13 @@ htmlcov/
 *.sqlite3
 backups/
 
-# Terraform local state and private variable values
+# Terraform generated data, local state, plans, and private variable values
 .terraform/
 *.tfstate
 *.tfstate.*
 *.tfvars
+*.tfvars.json
+*.tfplan
 crash.log
 
 # Editors and operating systems
