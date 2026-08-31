@@ -30,6 +30,9 @@ resource "aws_s3_bucket_versioning" "terraform_state" {
   }
 }
 
+# SSE-S3 is intentional for this cost-conscious learning environment.
+# Reassess customer-managed KMS encryption before the exception expires.
+# trivy:ignore:AWS-0132:exp:2027-02-28
 resource "aws_s3_bucket_server_side_encryption_configuration" "terraform_state" {
   bucket = aws_s3_bucket.terraform_state.id
 
