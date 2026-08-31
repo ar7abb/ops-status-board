@@ -1,6 +1,6 @@
 # Ops Status Board Architecture
 
-> **Current status:** The FastAPI and PostgreSQL workload runs as pinned containers on a separate Ubuntu 24.04 VM. Ansible maintains the server baseline, application deployment, Nginx proxy, and private Prometheus/Grafana monitoring core. AWS resources do not yet exist.
+> **Current status:** The FastAPI and PostgreSQL workload runs as pinned containers on a separate Ubuntu 24.04 VM. Ansible maintains the server baseline, application deployment, Nginx proxy, and private Prometheus/Grafana monitoring core. A protected S3 Terraform state foundation exists in Europe (Stockholm); workload network, IAM, compute, and storage resources do not yet exist.
 
 ## Architecture purpose
 

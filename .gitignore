@@ -43,6 +43,7 @@ backups/
 *.tfvars
 *.tfvars.json
 *.tfplan
+*.tfbackend
 crash.log
 
 # Editors and operating systems
