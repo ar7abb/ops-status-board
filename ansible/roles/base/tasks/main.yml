@@ -1,4 +1,11 @@
 ---
+- name: Require HTTPS for Ubuntu package repositories when requested
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list.d/ubuntu.sources
+    regexp: "URIs: http://"
+    replace: "URIs: https://"
+  when: ops_require_https_package_sources | bool
+
 - name: Refresh the APT package index when it is older than one hour
   ansible.builtin.apt:
     update_cache: true

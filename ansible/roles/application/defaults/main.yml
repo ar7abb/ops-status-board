@@ -4,4 +4,7 @@ ops_secret_dir: /etc/ops-status-board
 ops_compose_file: "{{ ops_runtime_dir }}/compose.yaml"
 
 ops_postgres_image: "postgres:16.14@sha256:95206741a5b214807675e14165369d05b93a9cf692223b616d07cca227e74b0b"
-ops_application_image: "ghcr.io/ar7abb/ops-status-board@sha256:217639c358b99dc0ab08ae4777a0955c668f6f891c4d59a43d31420861ebf48f"
+ops_application_image: "ghcr.io/ar7abb/ops-status-board@sha256:086ef2a3450f944847371ce2c99b9fb0140ee094662e856e1871e7e11e118525"
+ops_postgres_memory_limit: 512m
+ops_application_memory_limit: 512m
+ops_observability_enabled: true

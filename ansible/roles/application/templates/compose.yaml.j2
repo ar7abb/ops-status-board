@@ -3,7 +3,7 @@ name: ops-status-board
 services:
   db:
     image: {{ ops_postgres_image }}
-    mem_limit: 512m
+    mem_limit: {{ ops_postgres_memory_limit }}
     cpus: 0.50
     env_file:
       - {{ ops_secret_dir }}/postgres.env
@@ -19,7 +19,7 @@ services:
 
   app:
     image: {{ ops_application_image }}
-    mem_limit: 512m
+    mem_limit: {{ ops_application_memory_limit }}
     cpus: 0.50
     env_file:
       - {{ ops_secret_dir }}/app.env
@@ -46,6 +46,7 @@ services:
         condition: service_healthy
     command: ["alembic", "upgrade", "head"]
 
+{% if ops_observability_enabled | bool %}
   prometheus:
     image: {{ ops_prometheus_image }}
     mem_limit: {{ ops_prometheus_memory_limit }}
@@ -102,6 +103,7 @@ services:
       prometheus:
         condition: service_started
     restart: unless-stopped
+{% endif %}
 
 volumes:
   postgres-data:

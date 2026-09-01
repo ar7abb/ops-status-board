@@ -1,0 +1,18 @@
+# Copy this file to a private location outside the repository.
+# Obtain values from Terraform outputs without committing identifiers.
+
+[ops_servers]
+aws-app ansible_aws_ssm_instance_id=REPLACE_WITH_TERRAFORM_INSTANCE_ID
+
+[ops_servers:vars]
+ansible_connection=amazon.aws.aws_ssm
+ansible_aws_ssm_region=eu-north-1
+ansible_aws_ssm_bucket_name=REPLACE_WITH_TERRAFORM_TRANSFER_BUCKET
+ansible_aws_ssm_bucket_sse_mode=aws:kms
+ansible_aws_ssm_bucket_sse_kms_key_id=alias/ops-status-board-lab-backups
+ansible_python_interpreter=/usr/bin/python3
+ansible_become=true
+ansible_become_method=sudo
+ops_aws_region=eu-north-1
+ops_runtime_parameter_prefix=REPLACE_WITH_TERRAFORM_PARAMETER_PREFIX
+ops_application_version=c182896
