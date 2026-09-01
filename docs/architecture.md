@@ -1,6 +1,6 @@
 # Ops Status Board Architecture
 
-> **Current status:** The FastAPI and PostgreSQL workload runs as pinned containers on a separate Ubuntu 24.04 VM. Ansible maintains the server baseline, application deployment, Nginx proxy, and private Prometheus/Grafana monitoring core. A protected S3 Terraform state foundation exists in Europe (Stockholm). The workload network and EC2 Systems Manager identity are defined in Terraform but have not been planned or applied; compute and workload storage are not yet defined.
+> **Current status:** The FastAPI and PostgreSQL workload runs as pinned containers on a separate Ubuntu 24.04 VM. Ansible maintains the server baseline, application deployment, Nginx proxy, and private Prometheus/Grafana monitoring core. A protected S3 Terraform state foundation exists in Europe (Stockholm). The workload network, EC2 Systems Manager identity, compute, encrypted root storage, and protected database-backup storage are defined in Terraform but have not been planned or applied.
 
 ## Architecture purpose
 
