@@ -1,0 +1,22 @@
+---
+- name: Deploy the Ops Status Board through AWS Systems Manager
+  hosts: ops_servers
+  become: true
+  gather_facts: true
+
+  vars:
+    ops_manage_ssh: false
+    ops_manage_host_firewall: false
+    ops_require_https_package_sources: true
+    ops_observability_enabled: false
+    ops_postgres_memory_limit: 320m
+    ops_application_memory_limit: 384m
+
+  roles:
+    - base
+    - security
+    - docker
+    - runtime_secrets
+    - application
+    - backup
+    - nginx

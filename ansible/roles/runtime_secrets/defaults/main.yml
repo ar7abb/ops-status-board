@@ -1,0 +1,8 @@
+---
+ops_aws_region: eu-north-1
+ops_runtime_parameter_prefix: ""
+ops_database_name: ops_status_board
+ops_database_user: ops_status_board
+ops_application_environment: production
+ops_application_version: unknown
+ops_aws_cli_version: "2.36.34"

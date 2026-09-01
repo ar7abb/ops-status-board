@@ -86,3 +86,33 @@ resource "aws_iam_role_policy" "backup_access" {
   role   = aws_iam_role.instance.id
   policy = data.aws_iam_policy_document.backup_access.json
 }
+
+data "aws_iam_policy_document" "runtime_parameter_access" {
+  statement {
+    sid    = "ReadRuntimeParameters"
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+    ]
+    resources = [
+      aws_ssm_parameter.admin_api_token.arn,
+      aws_ssm_parameter.database_password.arn,
+    ]
+  }
+
+  statement {
+    sid     = "DecryptRuntimeParameters"
+    effect  = "Allow"
+    actions = ["kms:Decrypt"]
+    resources = [
+      aws_kms_key.backups.arn,
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "runtime_parameter_access" {
+  name   = "${var.project_name}-${var.environment}-runtime-parameter-access"
+  role   = aws_iam_role.instance.id
+  policy = data.aws_iam_policy_document.runtime_parameter_access.json
+}

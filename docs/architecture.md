@@ -1,6 +1,6 @@
 # Ops Status Board Architecture
 
-> **Current status:** The FastAPI and PostgreSQL workload runs as pinned containers on a separate Ubuntu 24.04 VM. Ansible maintains the server baseline, application deployment, Nginx proxy, and private Prometheus/Grafana monitoring core. A protected S3 Terraform state foundation exists in Europe (Stockholm). The workload network, EC2 Systems Manager identity, compute, encrypted root storage, and protected database-backup storage are defined in Terraform but have not been planned or applied.
+> **Current status:** The FastAPI and PostgreSQL workload runs as pinned containers on both the separate Ubuntu 24.04 practice VM and a Terraform-managed AWS instance in Europe (Stockholm). Ansible deploys the cloud workload through Systems Manager without inbound SSH. The cloud instance keeps the API loopback-only behind Nginx, uses encrypted Parameter Store runtime values, and omits the heavier local Prometheus/Grafana stack.
 
 ## Architecture purpose
 
@@ -32,7 +32,7 @@ The Ubuntu 24.04 WSL2 distribution is the workstation for code, Git, Docker, CI 
 source -> pull request checks -> protected main -> GHCR digest
                                                 |
                                                 +-> local VM deployment
-                                                +-> later AWS deployment
+                                                +-> AWS deployment through Ansible and SSM
 ```
 
 Deployments consume immutable image digests. The server does not rebuild application source.
@@ -41,6 +41,7 @@ Deployments consume immutable image digests. The server does not rebuild applica
 
 ```text
 Terraform -> AWS APIs -> network/IAM/SSM/EC2/EBS/private S3
+Ansible -> SSM + temporary private S3 transfer -> EC2 configuration
 GitHub Actions -> restricted OIDC role -> SSM digest deployment
 EC2 workload -> CloudWatch logs, metrics, and alarms
 PostgreSQL backup -> encrypted private S3 -> timed clean restore

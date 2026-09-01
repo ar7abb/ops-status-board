@@ -1,0 +1,134 @@
+---
+- name: Require the private runtime parameter path
+  ansible.builtin.assert:
+    that:
+      - ops_runtime_parameter_prefix | length > 0
+      - ops_runtime_parameter_prefix.startswith('/')
+    fail_msg: "Define the private Parameter Store runtime path in the cloud inventory."
+
+- name: Install the archive tool required by the AWS CLI installer
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+
+- name: Check whether the pinned AWS CLI version is installed
+  ansible.builtin.stat:
+    path: "/usr/local/aws-cli/v2/{{ ops_aws_cli_version }}/bin/aws"
+  register: aws_cli_pinned_version
+
+- name: Check whether another AWS CLI v2 installation exists
+  ansible.builtin.stat:
+    path: /usr/local/aws-cli/v2/current
+  register: aws_cli_current_version
+
+- name: Download the pinned AWS CLI installer
+  ansible.builtin.get_url:
+    url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-{{ ops_aws_cli_version }}.zip"
+    dest: /tmp/awscliv2.zip
+    mode: "0644"
+  when: not aws_cli_pinned_version.stat.exists
+
+- name: Extract the pinned AWS CLI installer
+  ansible.builtin.unarchive:
+    src: /tmp/awscliv2.zip
+    dest: /tmp
+    remote_src: true
+  when: not aws_cli_pinned_version.stat.exists
+
+- name: Install the pinned AWS CLI for the first time
+  ansible.builtin.command:
+    argv:
+      - /tmp/aws/install
+      - --bin-dir
+      - /usr/local/bin
+      - --install-dir
+      - /usr/local/aws-cli
+  when:
+    - not aws_cli_pinned_version.stat.exists
+    - not aws_cli_current_version.stat.exists
+
+- name: Update an existing AWS CLI installation to the pinned version
+  ansible.builtin.command:
+    argv:
+      - /tmp/aws/install
+      - --bin-dir
+      - /usr/local/bin
+      - --install-dir
+      - /usr/local/aws-cli
+      - --update
+  when:
+    - not aws_cli_pinned_version.stat.exists
+    - aws_cli_current_version.stat.exists
+
+- name: Remove the AWS CLI installer artifacts
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/awscliv2.zip
+    - /tmp/aws
+  when: not aws_cli_pinned_version.stat.exists
+
+- name: Ensure the private runtime configuration directory exists
+  ansible.builtin.file:
+    path: "{{ ops_secret_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Materialize root-only runtime files from encrypted Parameter Store values
+  ansible.builtin.shell: |
+    set -euo pipefail
+
+    database_password="$(aws ssm get-parameter \
+      --region {{ ops_aws_region | quote }} \
+      --name {{ (ops_runtime_parameter_prefix ~ '/database-password') | quote }} \
+      --with-decryption \
+      --query 'Parameter.Value' \
+      --output text)"
+
+    admin_api_token="$(aws ssm get-parameter \
+      --region {{ ops_aws_region | quote }} \
+      --name {{ (ops_runtime_parameter_prefix ~ '/admin-api-token') | quote }} \
+      --with-decryption \
+      --query 'Parameter.Value' \
+      --output text)"
+
+    changed=0
+
+    write_if_changed() {
+      destination="$1"
+      content="$2"
+      temporary_file="$(mktemp)"
+      printf '%s\n' "$content" > "$temporary_file"
+
+      if [ -f "$destination" ] && cmp -s "$temporary_file" "$destination"; then
+        rm -f -- "$temporary_file"
+      else
+        install -o root -g root -m 0600 "$temporary_file" "$destination"
+        rm -f -- "$temporary_file"
+        changed=1
+      fi
+    }
+
+    postgres_configuration="POSTGRES_DB={{ ops_database_name }}
+    POSTGRES_USER={{ ops_database_user }}
+    POSTGRES_PASSWORD=${database_password}"
+
+    application_configuration="APP_ENVIRONMENT={{ ops_application_environment }}
+    APP_VERSION={{ ops_application_version }}
+    DATABASE_URL=postgresql+psycopg://{{ ops_database_user }}:${database_password}@db:5432/{{ ops_database_name }}
+    ADMIN_API_TOKEN=${admin_api_token}
+    LOG_LEVEL=INFO"
+
+    write_if_changed "{{ ops_secret_dir }}/postgres.env" "$postgres_configuration"
+    write_if_changed "{{ ops_secret_dir }}/app.env" "$application_configuration"
+
+    printf 'changed=%s\n' "$changed"
+  args:
+    executable: /bin/bash
+  register: runtime_secret_materialization
+  changed_when: "'changed=1' in runtime_secret_materialization.stdout"
+  no_log: true
+  notify: deploy ops status board

@@ -1,7 +1,7 @@
 # Ansible automation
 
 This directory contains the version-controlled Ansible source for managing the
-Ops Status Board practice server.
+Ops Status Board local practice server and AWS workload instance.
 
 ## Boundaries
 
@@ -11,6 +11,10 @@ Ops Status Board practice server.
 - **Real inventory:** private and stored outside this repository.
 - **Repository inventory:** `inventory/hosts.ini.example` contains placeholders
   only.
+
+The AWS path uses a separate private inventory based on
+`inventory/ssm_hosts.ini.example`. It connects through Systems Manager rather
+than SSH and never requires an inbound security-group rule.
 
 ## WSL control-node setup
 
@@ -95,6 +99,14 @@ role:
 ansible-galaxy collection install -r ansible/requirements.yml
 ```
 
+Install the controller-side Python dependencies in the same virtual
+environment. The CRT extra is required when the AWS CLI login credential
+provider supplies the temporary credentials:
+
+```bash
+python -m pip install -r ansible/requirements-controller.txt
+```
+
 The private inventory must define the trusted workstation source and allowed SSH
 accounts. Keep their real values outside Git:
 
@@ -142,6 +154,44 @@ ansible-playbook \
 
 A repeat run should report `changed=0`. This proves the baseline is
 idempotent.
+
+## AWS deployment over Systems Manager
+
+`playbooks/cloud.yml` reuses the base, Docker, application, backup, and Nginx
+roles on the Terraform-managed EC2 instance. The cloud path deliberately does
+not manage SSH or UFW and does not run the local Prometheus/Grafana stack on the
+small instance.
+
+The private AWS inventory stays outside Git. It supplies the Terraform output
+identifiers, Stockholm region, temporary private S3 transfer bucket, Parameter
+Store prefix, and approved application version. The instance role retrieves
+the encrypted runtime values; Ansible never logs their contents. The managed
+files are root-owned with mode `0600`.
+
+The controller requires the AWS CLI, Session Manager plugin, the declared
+Ansible collections and Python dependencies, a current browser-login session,
+and a configured default region. Verify transport before deployment:
+
+```bash
+ANSIBLE_CONFIG=ansible.cfg ansible \
+  -i ~/.config/ops-status-board-ansible/hosts-aws.ini \
+  ops_servers \
+  -m ansible.builtin.ping
+```
+
+After reviewing the target and image digest, deploy with:
+
+```bash
+ANSIBLE_CONFIG=ansible.cfg ansible-playbook \
+  -i ~/.config/ops-status-board-ansible/hosts-aws.ini \
+  ansible/playbooks/cloud.yml
+```
+
+An immediate repeat run should report `changed=0`. Verification must include
+the loopback readiness endpoint, healthy application/database containers, the
+approved immutable digest, root-only secret metadata, zero inbound rules, an
+empty transfer bucket, and a no-change Terraform plan. See
+[`../docs/ansible-ssm-deployment.md`](../docs/ansible-ssm-deployment.md).
 
 ## Observability core
 
