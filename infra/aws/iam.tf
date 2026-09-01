@@ -39,3 +39,50 @@ resource "aws_iam_instance_profile" "instance" {
     }
   )
 }
+
+data "aws_iam_policy_document" "backup_access" {
+  statement {
+    sid     = "ListPostgreSQLBackups"
+    effect  = "Allow"
+    actions = ["s3:ListBucket"]
+    resources = [
+      aws_s3_bucket.backups.arn,
+    ]
+
+    condition {
+      test     = "StringLike"
+      variable = "s3:prefix"
+      values   = ["postgresql/*"]
+    }
+  }
+
+  statement {
+    sid    = "ReadAndWritePostgreSQLBackups"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+    ]
+    resources = [
+      "${aws_s3_bucket.backups.arn}/postgresql/*",
+    ]
+  }
+
+  statement {
+    sid    = "UseBackupEncryptionKey"
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt",
+      "kms:GenerateDataKey",
+    ]
+    resources = [
+      aws_kms_key.backups.arn,
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "backup_access" {
+  name   = "${var.project_name}-${var.environment}-backup-access"
+  role   = aws_iam_role.instance.id
+  policy = data.aws_iam_policy_document.backup_access.json
+}

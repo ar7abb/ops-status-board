@@ -30,13 +30,14 @@ The core includes one deliberate CI failure, one deployment failure with manual 
 
 ### Platform expansion
 
+- short-lived multi-instance scaling lab using a launch template, health checks, and load testing
 - optional JavaScript frontend
 - Kubernetes
 - microservices
 - managed database
 - load balancer
 
-These substantially change architecture, cost, and ownership. Kubernetes should be a separate follow-on project that solves a stated scaling, reliability, or team-workflow need.
+These substantially change architecture, cost, and ownership. Multiple independent instances alone do not prove scalability; a promoted scaling lab must address traffic distribution, shared state, health, and cleanup. Kubernetes should be a separate follow-on project that solves a stated scaling, reliability, or team-workflow need.
 
 ## Promotion rule
 
