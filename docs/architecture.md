@@ -49,6 +49,8 @@ PostgreSQL backup -> encrypted private S3 -> timed clean restore
 
 The cloud core demonstrates infrastructure, identity, secure delivery, monitoring, recovery, drift, destroy, recreate, and billing verification without requiring an always-running public website. Systems Manager replaces inbound SSH. CloudWatch replaces duplicating the full local monitoring stack on a small EC2 instance.
 
+M09 proved that the workload is reproducible rather than tied to one virtual machine. A reviewed Terraform destroy removed the workload while preserving the separate remote-state foundation and recovery checkpoint. A separately reviewed Terraform plan recreated the same 33 managed-resource addresses with new cloud identities, and Ansible restored the approved application configuration over SSM. HTTP readiness, healthy pinned containers, zero inbound rules, root-only runtime files, Ansible idempotence, and no-change Terraform plans verified equivalence.
+
 ## Security boundaries
 
 - FastAPI, PostgreSQL, metrics, dashboards, and Docker APIs are not unintentionally public.

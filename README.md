@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0–7 are complete. M07 added Prometheus and Grafana monitoring, application/host/database dashboards, alert and outage evidence, structured request-ID tracing, and scheduled PostgreSQL backup with a clean restore drill. The next milestone is AWS safety and a manual cloud lab. The v0.3 release will tag this verified state.
+> **Current status:** Milestones 0–9 are complete. The AWS workload is defined by Terraform, configured by Ansible over Systems Manager without inbound SSH, and protected by private encrypted state, storage, and runtime-secret controls. M09 proved reviewed plan/apply, controlled drift correction, complete workload destruction, cleanup, and equivalent recreation. Release `v0.4` records this verified state; M10 begins CloudWatch monitoring and secure cloud delivery.
 
 ## Portfolio focus
 
@@ -55,7 +55,7 @@ The approved roadmap contains 69 tasks across milestones M00–M12 and targets a
 | Windows | Host platform, browser, and terminal access |
 | Ubuntu 24.04 under WSL2 | Linux development and automation workstation |
 | Separate VirtualBox VM | Server deployment and operations practice beginning in M05 |
-| AWS | Later cost-controlled CloudOps implementation after the local system is proven |
+| AWS | Cost-controlled Terraform, SSM, Ansible, EC2, IAM, networking, and private encrypted storage implementation |
 
 The application and project repository live inside the WSL Linux filesystem. The VirtualBox VM remains a separate server environment.
 
@@ -69,6 +69,7 @@ The application and project repository live inside the WSL Linux filesystem. The
 - [`docs/lessons-learned.md`](docs/lessons-learned.md) records selected technical lessons.
 - [`docs/recovery-runbook.md`](docs/recovery-runbook.md) documents PostgreSQL backup and clean restore verification.
 - [`docs/observability.md`](docs/observability.md) records the local monitoring architecture, capacity budget, image-security decision, and verification evidence.
+- [`docs/terraform-drift-recreation.md`](docs/terraform-drift-recreation.md) records the reviewed M09 drift, destruction, cleanup, and equivalent recreation exercise.
 
 Private project state, learning notes, environment snapshots, credentials, and sensitive evidence remain outside the public repository.
 
@@ -332,4 +333,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Begin M08-T01: verify AWS account, cost, and root-security boundaries before creating any cloud workload resources. The manual AWS lab begins only after this gate is understood and explicitly approved.
+Begin M10-T01: add useful retained CloudWatch logs, metrics, alarms, and cost controls to the verified Terraform-managed workload.
