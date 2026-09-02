@@ -11,6 +11,11 @@
     ops_observability_enabled: false
     ops_postgres_memory_limit: 320m
     ops_application_memory_limit: 384m
+    ops_cloudwatch_enabled: true
+    ops_cloudwatch_region: eu-north-1
+    ops_cloudwatch_metrics_interval_seconds: 300
+    ops_cloudwatch_access_log_group: /ops-status-board/lab/nginx/access
+    ops_cloudwatch_error_log_group: /ops-status-board/lab/nginx/error
 
   roles:
     - base
@@ -20,3 +25,4 @@
     - application
     - backup
     - nginx
+    - cloudwatch

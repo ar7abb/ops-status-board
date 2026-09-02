@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0–9 are complete. The AWS workload is defined by Terraform, configured by Ansible over Systems Manager without inbound SSH, and protected by private encrypted state, storage, and runtime-secret controls. M09 proved reviewed plan/apply, controlled drift correction, complete workload destruction, cleanup, and equivalent recreation. Release `v0.4` records this verified state; M10 begins CloudWatch monitoring and secure cloud delivery.
+> **Current status:** Milestones 0–9 and M10-T01 are complete. The reproducible AWS workload now sends retained Nginx logs plus minimal host metrics to CloudWatch and evaluates four actionable alarms. Terraform remains converged, Ansible remains idempotent over Systems Manager without inbound SSH, and the monitoring design stays within an explicit free-allowance and promotional-credit boundary. Release `v0.4` records the reproducible cloud foundation; M10 continues with secure delivery.
 
 ## Portfolio focus
 
@@ -69,6 +69,7 @@ The application and project repository live inside the WSL Linux filesystem. The
 - [`docs/lessons-learned.md`](docs/lessons-learned.md) records selected technical lessons.
 - [`docs/recovery-runbook.md`](docs/recovery-runbook.md) documents PostgreSQL backup and clean restore verification.
 - [`docs/observability.md`](docs/observability.md) records the local monitoring architecture, capacity budget, image-security decision, and verification evidence.
+- [`docs/cloudwatch-observability.md`](docs/cloudwatch-observability.md) records the AWS signal flow, alarm policy, cost boundary, verification, and recovery path.
 - [`docs/terraform-drift-recreation.md`](docs/terraform-drift-recreation.md) records the reviewed M09 drift, destruction, cleanup, and equivalent recreation exercise.
 
 Private project state, learning notes, environment snapshots, credentials, and sensitive evidence remain outside the public repository.
@@ -333,4 +334,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Begin M10-T01: add useful retained CloudWatch logs, metrics, alarms, and cost controls to the verified Terraform-managed workload.
+Begin M10-T02: define a restricted GitHub Actions OIDC role and protected deployment workflow without storing long-lived AWS credentials.

@@ -1,0 +1,113 @@
+---
+- name: Validate the approved CloudWatch settings
+  ansible.builtin.assert:
+    that:
+      - ops_cloudwatch_region | length > 0
+      - ops_cloudwatch_metrics_interval_seconds | int >= 60
+      - ops_cloudwatch_access_log_group.startswith('/')
+      - ops_cloudwatch_error_log_group.startswith('/')
+    fail_msg: Define the approved region, standard-resolution interval, and Terraform-managed log groups.
+  when: ops_cloudwatch_enabled | bool
+
+- name: Check whether the CloudWatch Agent is installed
+  ansible.builtin.command:
+    cmd: dpkg-query -W -f=${Status} amazon-cloudwatch-agent
+  register: cloudwatch_agent_package
+  changed_when: false
+  failed_when: false
+  when: ops_cloudwatch_enabled | bool
+
+- name: Download the signed CloudWatch Agent installation artifacts
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "0600"
+  loop:
+    - url: "{{ ops_cloudwatch_package_url }}"
+      dest: /tmp/amazon-cloudwatch-agent.deb
+    - url: "{{ ops_cloudwatch_signature_url }}"
+      dest: /tmp/amazon-cloudwatch-agent.deb.sig
+    - url: "{{ ops_cloudwatch_signing_key_url }}"
+      dest: /tmp/amazon-cloudwatch-agent.gpg
+  when:
+    - ops_cloudwatch_enabled | bool
+    - cloudwatch_agent_package.rc != 0
+
+- name: Inspect the CloudWatch Agent signing-key fingerprint
+  ansible.builtin.command:
+    cmd: gpg --batch --show-keys --with-colons /tmp/amazon-cloudwatch-agent.gpg
+  register: cloudwatch_agent_key
+  changed_when: false
+  when:
+    - ops_cloudwatch_enabled | bool
+    - cloudwatch_agent_package.rc != 0
+
+- name: Require the documented CloudWatch Agent signing key
+  ansible.builtin.assert:
+    that:
+      - ops_cloudwatch_signing_fingerprint in cloudwatch_agent_key.stdout
+    fail_msg: The downloaded CloudWatch Agent signing key fingerprint does not match AWS documentation.
+  when:
+    - ops_cloudwatch_enabled | bool
+    - cloudwatch_agent_package.rc != 0
+
+- name: Import the verified CloudWatch Agent signing key
+  ansible.builtin.command:
+    cmd: >-
+      gpg --batch --no-default-keyring
+      --keyring /tmp/amazon-cloudwatch-agent-keyring.gpg
+      --import /tmp/amazon-cloudwatch-agent.gpg
+  changed_when: true
+  when:
+    - ops_cloudwatch_enabled | bool
+    - cloudwatch_agent_package.rc != 0
+
+- name: Verify the CloudWatch Agent package signature
+  ansible.builtin.command:
+    cmd: >-
+      gpg --batch --no-default-keyring
+      --keyring /tmp/amazon-cloudwatch-agent-keyring.gpg
+      --verify /tmp/amazon-cloudwatch-agent.deb.sig
+      /tmp/amazon-cloudwatch-agent.deb
+  changed_when: false
+  when:
+    - ops_cloudwatch_enabled | bool
+    - cloudwatch_agent_package.rc != 0
+
+- name: Install the verified CloudWatch Agent package
+  ansible.builtin.apt:
+    deb: /tmp/amazon-cloudwatch-agent.deb
+    state: present
+  when:
+    - ops_cloudwatch_enabled | bool
+    - cloudwatch_agent_package.rc != 0
+
+- name: Remove CloudWatch Agent installation artifacts
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /tmp/amazon-cloudwatch-agent.deb
+    - /tmp/amazon-cloudwatch-agent.deb.sig
+    - /tmp/amazon-cloudwatch-agent.gpg
+    - /tmp/amazon-cloudwatch-agent-keyring.gpg
+    - /tmp/amazon-cloudwatch-agent-keyring.gpg~
+  when: ops_cloudwatch_enabled | bool
+
+- name: Render the approved CloudWatch Agent configuration
+  ansible.builtin.template:
+    src: amazon-cloudwatch-agent.json.j2
+    dest: /etc/ops-status-board/cloudwatch-agent.json
+    owner: root
+    group: root
+    mode: "0644"
+  notify: apply cloudwatch configuration
+  when: ops_cloudwatch_enabled | bool
+
+- name: Ensure the CloudWatch Agent service is enabled
+  ansible.builtin.service:
+    name: amazon-cloudwatch-agent
+    enabled: true
+  when: ops_cloudwatch_enabled | bool
