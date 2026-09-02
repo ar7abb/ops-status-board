@@ -17,3 +17,13 @@ output "runtime_parameter_prefix" {
   description = "Parameter Store path containing encrypted application runtime values."
   value       = local.runtime_parameter_prefix
 }
+
+output "cloudwatch_access_log_group_name" {
+  description = "CloudWatch Logs group that stores structured Nginx access events."
+  value       = aws_cloudwatch_log_group.nginx_access.name
+}
+
+output "cloudwatch_error_log_group_name" {
+  description = "CloudWatch Logs group that stores Nginx error events."
+  value       = aws_cloudwatch_log_group.nginx_error.name
+}

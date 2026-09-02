@@ -61,3 +61,58 @@ variable "backup_retention_days" {
     error_message = "Backup retention must be between 7 and 90 days."
   }
 }
+
+variable "cloudwatch_log_retention_days" {
+  description = "Days to retain the selected Nginx logs in CloudWatch Logs."
+  type        = number
+  default     = 7
+
+  validation {
+    condition     = contains([1, 3, 5, 7, 14, 30], var.cloudwatch_log_retention_days)
+    error_message = "CloudWatch log retention must use an approved short retention period."
+  }
+}
+
+variable "cloudwatch_metrics_interval_seconds" {
+  description = "Collection interval for the two CloudWatch Agent host metrics."
+  type        = number
+  default     = 300
+
+  validation {
+    condition     = var.cloudwatch_metrics_interval_seconds >= 60
+    error_message = "CloudWatch Agent metrics must not use high-resolution collection below 60 seconds."
+  }
+}
+
+variable "disk_used_alarm_threshold_percent" {
+  description = "Root filesystem usage percentage that triggers the disk alarm."
+  type        = number
+  default     = 85
+
+  validation {
+    condition     = var.disk_used_alarm_threshold_percent >= 70 && var.disk_used_alarm_threshold_percent <= 95
+    error_message = "The disk alarm threshold must be between 70 and 95 percent."
+  }
+}
+
+variable "memory_available_alarm_threshold_percent" {
+  description = "Available memory percentage below which the memory alarm triggers."
+  type        = number
+  default     = 10
+
+  validation {
+    condition     = var.memory_available_alarm_threshold_percent >= 5 && var.memory_available_alarm_threshold_percent <= 30
+    error_message = "The available-memory alarm threshold must be between 5 and 30 percent."
+  }
+}
+
+variable "http_5xx_alarm_threshold" {
+  description = "Five-minute HTTP 5xx count that triggers the application alarm."
+  type        = number
+  default     = 3
+
+  validation {
+    condition     = var.http_5xx_alarm_threshold >= 1 && var.http_5xx_alarm_threshold <= 20
+    error_message = "The HTTP 5xx alarm threshold must be between 1 and 20 responses."
+  }
+}

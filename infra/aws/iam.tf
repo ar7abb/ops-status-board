@@ -116,3 +116,37 @@ resource "aws_iam_role_policy" "runtime_parameter_access" {
   role   = aws_iam_role.instance.id
   policy = data.aws_iam_policy_document.runtime_parameter_access.json
 }
+
+data "aws_iam_policy_document" "cloudwatch_agent" {
+  statement {
+    sid    = "WriteSelectedNginxLogs"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = [
+      "${aws_cloudwatch_log_group.nginx_access.arn}:*",
+      "${aws_cloudwatch_log_group.nginx_error.arn}:*",
+    ]
+  }
+
+  statement {
+    sid       = "PublishSelectedHostMetrics"
+    effect    = "Allow"
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "cloudwatch:namespace"
+      values   = ["CWAgent"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "cloudwatch_agent" {
+  name   = "${var.project_name}-${var.environment}-cloudwatch-agent"
+  role   = aws_iam_role.instance.id
+  policy = data.aws_iam_policy_document.cloudwatch_agent.json
+}

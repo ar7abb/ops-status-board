@@ -1,0 +1,11 @@
+---
+- name: Apply the CloudWatch Agent configuration
+  ansible.builtin.command:
+    cmd: >-
+      /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+      -a fetch-config
+      -m ec2
+      -s
+      -c file:/etc/ops-status-board/cloudwatch-agent.json
+  changed_when: true
+  listen: apply cloudwatch configuration
