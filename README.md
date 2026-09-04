@@ -70,6 +70,7 @@ The application and project repository live inside the WSL Linux filesystem. The
 - [`docs/recovery-runbook.md`](docs/recovery-runbook.md) documents PostgreSQL backup and clean restore verification.
 - [`docs/observability.md`](docs/observability.md) records the local monitoring architecture, capacity budget, image-security decision, and verification evidence.
 - [`docs/cloudwatch-observability.md`](docs/cloudwatch-observability.md) records the AWS signal flow, alarm policy, cost boundary, verification, and recovery path.
+- [`docs/github-oidc-delivery.md`](docs/github-oidc-delivery.md) explains the protected GitHub-to-AWS identity exchange, trust boundary, narrow SSM permissions, and recovery path.
 - [`docs/terraform-drift-recreation.md`](docs/terraform-drift-recreation.md) records the reviewed M09 drift, destruction, cleanup, and equivalent recreation exercise.
 
 Private project state, learning notes, environment snapshots, credentials, and sensitive evidence remain outside the public repository.

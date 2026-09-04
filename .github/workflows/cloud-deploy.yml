@@ -1,0 +1,62 @@
+name: Cloud deployment identity check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-aws-identity:
+    name: Verify protected AWS identity
+    runs-on: ubuntu-24.04
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: eu-north-1
+    steps:
+      - name: Prove a wrong-audience token is rejected
+        env:
+          ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+        run: |
+          response="$(curl --fail --silent --show-error \
+            --header "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=not-sts.amazonaws.com")"
+          invalid_token="$(printf '%s' "$response" | jq --raw-output '.value')"
+
+          set +e
+          aws sts assume-role-with-web-identity \
+            --role-arn "$ROLE_ARN" \
+            --role-session-name denied-audience-check \
+            --web-identity-token "$invalid_token" \
+            >/dev/null 2>/tmp/oidc-denied.txt
+          denied_status="$?"
+          set -e
+
+          rm -f /tmp/oidc-denied.txt
+          test "$denied_status" -ne 0
+          echo "Wrong-audience token was rejected as expected."
+
+      - name: Obtain short-lived AWS credentials
+        uses: aws-actions/configure-aws-credentials@cabfdba3510de1431bac9dba27511d97497fc100 # v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify temporary caller identity
+        run: |
+          aws sts get-caller-identity >/dev/null
+          echo "Temporary AWS identity verified."
+
+      - name: Verify the intended SSM target is online
+        env:
+          INSTANCE_ID: ${{ vars.AWS_INSTANCE_ID }}
+        run: |
+          test -n "$INSTANCE_ID"
+          test "$(aws ssm describe-instance-information \
+            --filters "Key=InstanceIds,Values=$INSTANCE_ID" \
+            --query 'InstanceInformationList[0].PingStatus' \
+            --output text)" = "Online"
+          echo "Intended SSM target is online."

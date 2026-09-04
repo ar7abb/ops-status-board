@@ -42,7 +42,7 @@ Deployments consume immutable image digests. The server does not rebuild applica
 ```text
 Terraform -> AWS APIs -> network/IAM/SSM/EC2/EBS/private S3
 Ansible -> SSM + temporary private S3 transfer -> EC2 configuration
-GitHub Actions -> restricted OIDC role -> SSM digest deployment
+GitHub Actions -> protected environment -> restricted OIDC role -> SSM digest deployment
 EC2 workload -> CloudWatch logs, metrics, and alarms
 PostgreSQL backup -> encrypted private S3 -> timed clean restore
 ```
