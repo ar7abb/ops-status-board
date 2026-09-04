@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0–9 and M10-T01 are complete. The reproducible AWS workload now sends retained Nginx logs plus minimal host metrics to CloudWatch and evaluates four actionable alarms. Terraform remains converged, Ansible remains idempotent over Systems Manager without inbound SSH, and the monitoring design stays within an explicit free-allowance and promotional-credit boundary. Release `v0.4` records the reproducible cloud foundation; M10 continues with secure delivery.
+> **Current status:** Milestones 0–9 plus M10-T01 and M10-T02 are complete. The reproducible AWS workload sends retained Nginx logs plus minimal host metrics to CloudWatch and evaluates four actionable alarms. A protected GitHub environment now exchanges repository-bound OIDC identity for a temporary, least-privileged AWS role without storing a long-lived cloud key. Terraform remains converged, Ansible remains idempotent over Systems Manager without inbound SSH, and the cloud design stays within an explicit free-allowance and promotional-credit boundary. Release `v0.4` records the reproducible cloud foundation; M10 continues with immutable digest deployment, visible failure, and manual rollback.
 
 ## Portfolio focus
 
