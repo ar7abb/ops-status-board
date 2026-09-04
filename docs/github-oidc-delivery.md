@@ -86,3 +86,30 @@ If the trust or permission boundary is incorrect:
    resources are unaffected.
 
 No long-lived AWS credential needs rotation because none is stored in GitHub.
+
+## Verification evidence
+
+The implementation used a reviewed Terraform plan that created the OIDC
+provider, deployment role, and inline permission policy without changing or
+destroying the workload. IAM Access Analyzer returned no findings, the
+HIGH/CRITICAL infrastructure and secret scan passed, and Terraform converged.
+
+The first protected workflow remained visibly failed when its repository-name
+subject did not match GitHub's actual stable-identifier subject. A temporary
+sanitized diagnostic exposed only the audience and subject claims, identified
+the mismatch, and was removed. The diagnostic run containing those identifiers
+was deleted after the correction.
+
+The role trust was updated in place from a separately reviewed plan. The final
+protected workflow then proved all expected paths:
+
+- the human `production` approval was required;
+- a wrong-audience token was rejected;
+- the valid token obtained temporary AWS credentials;
+- caller-identity verification succeeded without printing the identity;
+- the intended SSM target reported online;
+- no application deployment occurred.
+
+The correction passed protected pull-request CI, and the final workflow retained
+no claim-printing diagnostic. The failed run remains part of the troubleshooting
+history without being rewritten as a success.
