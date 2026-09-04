@@ -24,13 +24,18 @@ AWS still requires a valid signed token whose claims match the trust policy.
 The role trust uses exact equality checks:
 
 - audience: `sts.amazonaws.com`;
-- subject: `repo:ar7abb/ops-status-board:environment:production`.
+- subject: the approved repository and `production` environment, including
+  GitHub's stable owner and repository identifiers.
 
 There is no repository, organization, branch, or environment wildcard. GitHub's
 `production` environment accepts only protected branches and requires a human
 reviewer. Administrators cannot bypass its configured protection rules. This
 combines two controls: GitHub decides whether the protected job may start, and
 AWS independently decides whether its token may assume the role.
+
+The exact subject is a required sensitive Terraform input stored only in an
+ignored private variable file. Public configuration documents its shape and
+purpose without publishing the stable identifiers.
 
 ## Permission boundary
 
@@ -65,8 +70,9 @@ caller identity.
 Before using valid credentials, the workflow requests a token with a deliberately
 incorrect audience and verifies that AWS rejects it. It then requests the proper
 AWS audience, obtains temporary credentials, and confirms that the intended SSM
-target is online. This task performs no application deployment; immutable digest
-deployment and rollback remain separate work.
+target is online. It does not print token claims or cloud identifiers. This task
+performs no application deployment; immutable digest deployment and rollback
+remain separate work.
 
 ## Recovery
 
