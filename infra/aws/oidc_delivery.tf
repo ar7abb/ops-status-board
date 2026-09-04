@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repository}:environment:${var.github_environment}"]
+      values   = [var.github_oidc_subject]
     }
   }
 }
@@ -43,7 +43,7 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
 resource "aws_iam_role" "github_actions_deploy" {
   name                 = "${var.project_name}-${var.environment}-github-deploy"
   description          = "Short-lived role for approved Ops Status Board GitHub deployments."
-  assume_role_policy   = data.aws_iam_policy_document.github_actions_assume_role.json
+  assume_role_policy   = sensitive(data.aws_iam_policy_document.github_actions_assume_role.json)
   max_session_duration = 3600
 
   tags = merge(

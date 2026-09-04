@@ -26,21 +26,15 @@ variable "environment" {
   default     = "lab"
 }
 
-variable "github_repository" {
-  description = "Exact GitHub owner/repository allowed to request the deployment role."
+variable "github_oidc_subject" {
+  description = "Exact private GitHub OIDC subject for the approved repository and production environment."
   type        = string
-  default     = "ar7abb/ops-status-board"
+  sensitive   = true
 
   validation {
-    condition     = can(regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", var.github_repository))
-    error_message = "github_repository must use the owner/repository format."
+    condition     = can(regex("^repo:[^:]+/[^:]+:environment:[^:]+$", var.github_oidc_subject))
+    error_message = "github_oidc_subject must identify one exact repository and environment."
   }
-}
-
-variable "github_environment" {
-  description = "Protected GitHub environment required in the OIDC subject claim."
-  type        = string
-  default     = "production"
 }
 
 variable "vpc_cidr" {
