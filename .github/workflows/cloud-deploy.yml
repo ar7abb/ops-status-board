@@ -39,6 +39,31 @@ jobs:
           test "$denied_status" -ne 0
           echo "Wrong-audience token was rejected as expected."
 
+      - name: Inspect safe valid-token claims
+        run: |
+          response="$(curl --fail --silent --show-error \
+            --header "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com")"
+          oidc_token="$(printf '%s' "$response" | jq --raw-output '.value')"
+
+          OIDC_TOKEN="$oidc_token" python3 - <<'PY'
+          import base64
+          import json
+          import os
+
+          encoded_payload = os.environ["OIDC_TOKEN"].split(".")[1]
+          encoded_payload += "=" * (-len(encoded_payload) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(encoded_payload))
+
+          for claim_name in ("aud", "sub"):
+              claim_value = claims.get(claim_name)
+              if not isinstance(claim_value, str):
+                  raise SystemExit(f"Missing expected {claim_name} claim")
+              print(f"{claim_name}={claim_value}")
+          PY
+
+          unset response oidc_token OIDC_TOKEN
+
       - name: Obtain short-lived AWS credentials
         uses: aws-actions/configure-aws-credentials@cabfdba3510de1431bac9dba27511d97497fc100 # v5
         with:
