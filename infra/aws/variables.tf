@@ -4,6 +4,16 @@ variable "aws_region" {
   default     = "eu-north-1"
 }
 
+variable "ubuntu_ami_id" {
+  description = "Reviewed Ubuntu 24.04 x86_64 AMI ID for the workload Region. Pin this value so unrelated applies cannot replace EC2 when a newer image appears."
+  type        = string
+
+  validation {
+    condition     = can(regex("^ami-[0-9a-f]+$", var.ubuntu_ami_id))
+    error_message = "ubuntu_ami_id must be a valid EC2 AMI ID beginning with ami-."
+  }
+}
+
 variable "project_name" {
   description = "Stable project name used for resource names and tags."
   type        = string
@@ -14,6 +24,23 @@ variable "environment" {
   description = "Deployment environment represented by these resources."
   type        = string
   default     = "lab"
+}
+
+variable "github_repository" {
+  description = "Exact GitHub owner/repository allowed to request the deployment role."
+  type        = string
+  default     = "ar7abb/ops-status-board"
+
+  validation {
+    condition     = can(regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", var.github_repository))
+    error_message = "github_repository must use the owner/repository format."
+  }
+}
+
+variable "github_environment" {
+  description = "Protected GitHub environment required in the OIDC subject claim."
+  type        = string
+  default     = "production"
 }
 
 variable "vpc_cidr" {

@@ -27,3 +27,8 @@ output "cloudwatch_error_log_group_name" {
   description = "CloudWatch Logs group that stores Nginx error events."
   value       = aws_cloudwatch_log_group.nginx_error.name
 }
+
+output "github_actions_deploy_role_arn" {
+  description = "ARN stored as the non-secret AWS_DEPLOY_ROLE_ARN GitHub environment variable."
+  value       = aws_iam_role.github_actions_deploy.arn
+}
