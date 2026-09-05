@@ -49,6 +49,8 @@ PostgreSQL backup -> encrypted private S3 -> timed clean restore
 
 The cloud core demonstrates infrastructure, identity, secure delivery, monitoring, recovery, drift, destroy, recreate, and billing verification without requiring an always-running public website. Systems Manager replaces inbound SSH. CloudWatch replaces duplicating the full local monitoring stack on a small EC2 instance. The agent publishes root-disk and available-memory metrics every five minutes and ships only the structured Nginx access and error logs with seven-day retention. Terraform evaluates disk, memory, EC2 status, and repeated HTTP 5xx alarms; notification routing remains a separate concern.
 
+The verified delivery trace is source commit -> protected CI -> immutable GHCR digest -> reviewed `production` environment -> GitHub OIDC token -> temporary AWS role -> Systems Manager command -> app-only Docker Compose replacement -> digest, source-revision, `/version`, and readiness gates. Release runs are serialized in GitHub and locked again on the instance. The deployment does not restart PostgreSQL, run migrations, or remove volumes. A nonexistent-digest drill remained visibly failed while the healthy service stayed online; a separate reviewed workflow restored the exact previous digest and full revision. Automatic rollback is intentionally outside the core scope.
+
 M09 proved that the workload is reproducible rather than tied to one virtual machine. A reviewed Terraform destroy removed the workload while preserving the separate remote-state foundation and recovery checkpoint. A separately reviewed Terraform plan recreated the same 33 managed-resource addresses with new cloud identities, and Ansible restored the approved application configuration over SSM. HTTP readiness, healthy pinned containers, zero inbound rules, root-only runtime files, Ansible idempotence, and no-change Terraform plans verified equivalence.
 
 ## Security boundaries
@@ -57,6 +59,7 @@ M09 proved that the workload is reproducible rather than tied to one virtual mac
 - Local VM exposure is explicitly inspected because Docker-published ports can interact with firewall filtering.
 - Cloud administration uses Systems Manager and has no inbound SSH.
 - GitHub uses short-lived, repository/environment-restricted OIDC credentials.
+- The deployment role is instance-scoped, but its approved SSM shell document runs with root-level host authority. Protected workflow review and tightly controlled repository/environment access are therefore critical boundaries.
 - Terraform state and database backups are private and encrypted.
 - Application secrets, database credentials, private keys, account identifiers, and sensitive evidence never enter Git or logs.
 - MFA, least privilege, non-root containers, dependency/container/IaC scanning, safe logs, recovery proof, and threat review are integrated across the core.

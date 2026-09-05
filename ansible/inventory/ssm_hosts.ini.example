@@ -15,4 +15,4 @@ ansible_become=true
 ansible_become_method=sudo
 ops_aws_region=eu-north-1
 ops_runtime_parameter_prefix=REPLACE_WITH_TERRAFORM_PARAMETER_PREFIX
-ops_application_version=c182896
+ops_application_version=c182896ae300ca873f42d53b3cb6b43201ac5263

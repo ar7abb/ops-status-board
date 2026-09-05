@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0–9 plus M10-T01 and M10-T02 are complete. The reproducible AWS workload sends retained Nginx logs plus minimal host metrics to CloudWatch and evaluates four actionable alarms. A protected GitHub environment now exchanges repository-bound OIDC identity for a temporary, least-privileged AWS role without storing a long-lived cloud key. Terraform remains converged, Ansible remains idempotent over Systems Manager without inbound SSH, and the cloud design stays within an explicit free-allowance and promotional-credit boundary. Release `v0.4` records the reproducible cloud foundation; M10 continues with immutable digest deployment, visible failure, and manual rollback.
+> **Current status:** Milestones 0–10 are complete. The AWS workload is reproducible, privately administered through Systems Manager, and monitored by retained CloudWatch logs, minimal host metrics, and four alarms. A protected GitHub environment exchanges repository-bound OIDC identity for short-lived AWS credentials. The release workflow deploys reviewed image digests, verifies the image's source revision and HTTP health, preserves failed deployment evidence, and requires a separate manual rollback. Release `v0.5` records the verified secure-delivery path; the next milestone focuses on recovery drills and final cloud cleanup.
 
 ## Portfolio focus
 
@@ -335,4 +335,4 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Begin M10-T02: define a restricted GitHub Actions OIDC role and protected deployment workflow without storing long-lived AWS credentials.
+Begin M11-T01 with a read-only recovery preflight: verify the private backup, current workload health, recovery target, cost boundary, and exact cleanup exclusions before changing cloud state.
