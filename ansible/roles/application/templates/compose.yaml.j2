@@ -19,6 +19,8 @@ services:
 
   app:
     image: {{ ops_application_image }}
+    environment:
+      APP_VERSION: "{{ ops_application_version }}"
     mem_limit: {{ ops_application_memory_limit }}
     cpus: 0.50
     env_file:
