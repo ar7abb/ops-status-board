@@ -8,6 +8,10 @@ readonly backup_prefix="{{ ops_backup_prefix }}"
 readonly retention_count="{{ ops_backup_retention_count }}"
 readonly lock_file="{{ ops_backup_lock_file }}"
 readonly container_temp_file="{{ ops_backup_container_temp_file }}"
+readonly s3_bucket="{{ ops_backup_s3_bucket }}"
+readonly s3_prefix="{{ ops_backup_s3_prefix }}"
+readonly aws_region="{{ ops_backup_aws_region }}"
+readonly kms_key_id="{{ ops_backup_kms_key_id }}"
 readonly managed_backup_pattern="${backup_prefix}-????????T??????Z.dump"
 
 exec 9>"${lock_file}"
@@ -21,6 +25,8 @@ install -d -m 0700 -o root -g root "${backup_dir}"
 backup_stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 backup_file="${backup_dir}/${backup_prefix}-${backup_stamp}.dump"
 checksum_file="${backup_file}.sha256"
+backup_name="$(basename "${backup_file}")"
+checksum_name="$(basename "${checksum_file}")"
 
 cleanup_container_temp() {
     docker compose -f "${compose_file}" exec -T db \
@@ -45,8 +51,23 @@ docker compose -f "${compose_file}" cp \
     "db:${container_temp_file}" "${backup_file}"
 
 chmod 0600 "${backup_file}"
-sha256sum "${backup_file}" > "${checksum_file}"
+(
+    cd "${backup_dir}"
+    sha256sum "${backup_name}"
+) > "${checksum_file}"
 chmod 0600 "${checksum_file}"
+
+aws s3 cp "${backup_file}" "s3://${s3_bucket}/${s3_prefix}/${backup_name}" \
+    --region "${aws_region}" \
+    --sse aws:kms \
+    --sse-kms-key-id "${kms_key_id}" \
+    --only-show-errors
+
+aws s3 cp "${checksum_file}" "s3://${s3_bucket}/${s3_prefix}/${checksum_name}" \
+    --region "${aws_region}" \
+    --sse aws:kms \
+    --sse-kms-key-id "${kms_key_id}" \
+    --only-show-errors
 
 mapfile -t expired_backups < <(
     find "${backup_dir}" \
@@ -62,4 +83,5 @@ for expired_backup in "${expired_backups[@]}"; do
     rm -f -- "${expired_backup}" "${expired_backup}.sha256"
 done
 
-printf '%s\n' "created backup ${backup_file}"
+printf '%s\n' \
+    "created local backup ${backup_file} and uploaded an encrypted remote copy"

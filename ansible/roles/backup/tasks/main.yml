@@ -1,4 +1,15 @@
 ---
+- name: Validate encrypted remote backup configuration
+  ansible.builtin.assert:
+    that:
+      - ops_backup_s3_bucket | length > 0
+      - ops_backup_s3_prefix | length > 0
+      - ops_backup_aws_region | length > 0
+      - ops_backup_kms_key_id | length > 0
+    fail_msg: >-
+      Define the S3 bucket, object prefix, AWS Region, and KMS key used for
+      encrypted PostgreSQL backups.
+
 - name: Ensure the protected backup directory exists
   ansible.builtin.file:
     path: "{{ ops_backup_dir }}"

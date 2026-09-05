@@ -3,6 +3,11 @@ ops_backup_dir: /var/backups/ops-status-board
 ops_backup_prefix: ops-status-board
 ops_backup_retention_count: 7
 
+ops_backup_s3_bucket: ""
+ops_backup_s3_prefix: postgresql
+ops_backup_aws_region: ""
+ops_backup_kms_key_id: ""
+
 ops_backup_script: /usr/local/sbin/ops-status-board-backup
 ops_backup_lock_file: /run/lock/ops-status-board-backup.lock
 ops_backup_container_temp_file: /tmp/ops-status-board-backup.dump

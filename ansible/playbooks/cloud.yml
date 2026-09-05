@@ -16,6 +16,9 @@
     ops_cloudwatch_metrics_interval_seconds: 300
     ops_cloudwatch_access_log_group: /ops-status-board/lab/nginx/access
     ops_cloudwatch_error_log_group: /ops-status-board/lab/nginx/error
+    ops_backup_s3_bucket: "{{ lookup('env', 'OPS_BACKUP_S3_BUCKET') }}"
+    ops_backup_aws_region: eu-north-1
+    ops_backup_kms_key_id: alias/ops-status-board-lab-backups
 
   roles:
     - base
