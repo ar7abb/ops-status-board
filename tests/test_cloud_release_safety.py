@@ -53,9 +53,12 @@ def runtime(tmp_path, monkeypatch):
         lambda *args, **kwargs: type(
             "Response",
             (),
-            {"status": 200, "__enter__": lambda self: self,
-             "__exit__": lambda *args: None,
-             "read": lambda self: json.dumps({"version": REVISION}).encode()},
+            {
+                "status": 200,
+                "__enter__": lambda self: self,
+                "__exit__": lambda *args: None,
+                "read": lambda self: json.dumps({"version": REVISION}).encode(),
+            },
         )(),
     )
     return helper, calls, source
@@ -111,21 +114,31 @@ def test_source_mismatch_cannot_start_container(runtime, tmp_path):
 def test_dispatch_rejects_shell_injection():
     dispatcher = module("dispatch_cloud_release")
     with pytest.raises(ValueError):
-        dispatcher.inputs({"RELEASE_IMAGE": IMAGE + "$(id)",
-                           "RELEASE_REVISION": REVISION,
-                           "RELEASE_OPERATION": "deploy"})
+        dispatcher.inputs(
+            {
+                "RELEASE_IMAGE": IMAGE + "$(id)",
+                "RELEASE_REVISION": REVISION,
+                "RELEASE_OPERATION": "deploy",
+            }
+        )
 
 
 def test_remote_failure_never_becomes_success(monkeypatch):
     dispatcher = module("dispatch_cloud_release")
-    results = iter([
-        {"InstanceInformationList": [{"PingStatus": "Online"}]},
-        {"Command": {"CommandId": "fake-command"}},
-        {"Status": "Failed", "ResponseCode": 1},
-    ])
+    results = iter(
+        [
+            {"InstanceInformationList": [{"PingStatus": "Online"}]},
+            {"Command": {"CommandId": "fake-command"}},
+            {"Status": "Failed", "ResponseCode": 1},
+        ]
+    )
     monkeypatch.setattr(dispatcher, "aws", lambda *a, **k: next(results))
     with pytest.raises(RuntimeError, match="separate manual rollback"):
-        dispatcher.dispatch({"RELEASE_IMAGE": IMAGE,
-                             "RELEASE_REVISION": REVISION,
-                             "RELEASE_OPERATION": "deploy",
-                             "INSTANCE_ID": "i-" + "a" * 17})
+        dispatcher.dispatch(
+            {
+                "RELEASE_IMAGE": IMAGE,
+                "RELEASE_REVISION": REVISION,
+                "RELEASE_OPERATION": "deploy",
+                "INSTANCE_ID": "i-" + "a" * 17,
+            }
+        )
