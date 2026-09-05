@@ -1,7 +1,7 @@
-# Protected cloud release — implementation checkpoint
+# Protected cloud release
 
-Status: local implementation under test. M10-T03 and M10-T04 are not complete.
-No successful deployment, failure drill, rollback, or v0.5 release is claimed here.
+Status: verified in the M10 secure-delivery drill. The final running state is the
+known pre-drill healthy release after an explicit manual rollback.
 
 ## What the release path does
 
@@ -38,10 +38,10 @@ last-healthy-release file only after all gates pass. Record the known healthy di
 and source revision independently before the drill. A timeout means the outcome is
 unknown, not that execution stopped; inspect SSM and the host before retrying.
 
-For this lab, the proposed controlled failure is a nonexistent digest in the allowed
-repository. This tests visible release failure without taking the healthy application
-down. A successful manual redeployment afterward is not evidence of recovering from
-an application outage; describe that distinction explicitly.
+For this lab, the controlled failure used a nonexistent digest in the allowed
+repository. It tested visible release failure without taking the healthy application
+down. The later manual rollback proves deliberate selection and restoration of the
+previous artifact, but it is not evidence of recovering from an application outage.
 
 ## Configuration ownership and security
 
@@ -60,19 +60,26 @@ Raw AWS responses and remote command output are not printed in public workflow l
 Inspect failures privately; never publish environment files, credentials, instance IDs,
 account IDs, command payloads containing private values, or database backups.
 
-## Remaining live acceptance checks
+## Verified M10 drill
 
-1. Refresh the local AWS login; verify intended identity and region privately.
-2. Verify current image/source revision, `/version`, readiness, database persistence,
-   CloudWatch alarm states, and a no-change Terraform plan.
-3. Review and publish the workflow only after required CI passes.
-4. Approve one healthy digest deployment and operate the production gate.
-5. Separately approve the nonexistent-digest drill and retain its failed run.
-6. Manually approve rollback/redeployment of the known healthy digest; verify health,
-   database continuity, image/version evidence, monitoring, and Terraform convergence.
-7. Reconcile Ansible desired image and sanitized evidence, then close M10-T03.
-8. Demonstrate the complete source-to-cloud trace and learner workflow modification;
-   publish v0.5 and close M10-T04 only after those checks are verified.
+- Protected CI built source `4095b8478f061c197bbcfd8c830ace66d9bdae11`
+  as digest `sha256:e6f800e940bb0708ddecae4b19d2a31e7824408a4ab783018f0d006178bf03e7`.
+- The protected deployment run obtained temporary OIDC credentials and passed the
+  digest, OCI source-revision, `/version`, and HTTP readiness gates.
+- A separate nonexistent-digest run failed visibly in the deployment step. A direct
+  check confirmed that the successful candidate remained ready and running.
+- A separate manual rollback restored digest
+  `sha256:086ef2a3450f944847371ce2c99b9fb0140ee094662e856e1871e7e11e118525`
+  and revision `c182896ae300ca873f42d53b3cb6b43201ac5263`.
+- Post-rollback checks confirmed HTTP readiness, exact `/version`, database presence,
+  four healthy CloudWatch alarms, SSM Online status, and Terraform convergence.
+- The helper itself compared database container identity before and after each
+  successful application replacement. No migration, database restart, infrastructure
+  replacement, or volume removal occurred.
+
+GitHub reported that the pinned AWS credentials action currently targets Node.js 20
+and was forced onto Node.js 24 by the runner. The action succeeded; the warning is
+retained as dependency-maintenance evidence rather than treated as a deployment error.
 
 ## References
 
