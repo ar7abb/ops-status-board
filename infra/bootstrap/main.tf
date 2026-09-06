@@ -1,5 +1,9 @@
 resource "aws_s3_bucket" "terraform_state" {
   bucket = var.state_bucket_name
+  # M11-T04 removes the bootstrap only after the workload is destroyed and
+  # independently verified absent. Raw state contains generated secret values,
+  # so all versions are deleted rather than retained as portfolio evidence.
+  force_destroy = true
 
   tags = {
     Name      = var.state_bucket_name
@@ -8,9 +12,6 @@ resource "aws_s3_bucket" "terraform_state" {
     ManagedBy = "terraform"
   }
 
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "aws_s3_bucket_public_access_block" "terraform_state" {
