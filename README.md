@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0–10 are complete. The AWS workload is reproducible, privately administered through Systems Manager, and monitored by retained CloudWatch logs, minimal host metrics, and four alarms. A protected GitHub environment exchanges repository-bound OIDC identity for short-lived AWS credentials. The release workflow deploys reviewed image digests, verifies the image's source revision and HTTP health, preserves failed deployment evidence, and requires a separate manual rollback. Release `v0.5` records the verified secure-delivery path; the next milestone focuses on recovery drills and final cloud cleanup.
+> **Current status:** Milestones 0–10 and the recovery/audit portion of Milestone 11 are complete. The AWS workload is reproducible, privately administered through Systems Manager, monitored by CloudWatch, and backed up to private KMS-encrypted S3. Timed clean restore and controlled database-failure drills verified recovery, request/log/alarm correlation, and safe service restoration. The integrated audit hardened the application container and corrected an Ansible handler-ordering gap. Release `v0.9` records this verified checkpoint; evidence-preserving cloud teardown and delayed billing verification remain.
 
 ## Portfolio focus
 
@@ -72,6 +72,8 @@ The application and project repository live inside the WSL Linux filesystem. The
 - [`docs/cloudwatch-observability.md`](docs/cloudwatch-observability.md) records the AWS signal flow, alarm policy, cost boundary, verification, and recovery path.
 - [`docs/github-oidc-delivery.md`](docs/github-oidc-delivery.md) explains the protected GitHub-to-AWS identity exchange, trust boundary, narrow SSM permissions, and recovery path.
 - [`docs/terraform-drift-recreation.md`](docs/terraform-drift-recreation.md) records the reviewed M09 drift, destruction, cleanup, and equivalent recreation exercise.
+- [`docs/integrated-cloud-audit.md`](docs/integrated-cloud-audit.md) connects IAM, network, host, container, delivery, data, monitoring, and recovery evidence and records accepted limitations.
+- [`docs/postmortems/m11-database-dependency-incident.md`](docs/postmortems/m11-database-dependency-incident.md) records the controlled database failure, signal correlation, and verified recovery.
 
 Private project state, learning notes, environment snapshots, credentials, and sensitive evidence remain outside the public repository.
 
