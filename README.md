@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0–10 and the recovery/audit portion of Milestone 11 are complete. The AWS workload is reproducible, privately administered through Systems Manager, monitored by CloudWatch, and backed up to private KMS-encrypted S3. Timed clean restore and controlled database-failure drills verified recovery, request/log/alarm correlation, and safe service restoration. The integrated audit hardened the application container and corrected an Ansible handler-ordering gap. Release `v0.9` records this verified checkpoint; evidence-preserving cloud teardown and delayed billing verification remain.
+> **Current status:** Milestones 0–10 and the recovery, incident, audit, and operational teardown portions of Milestone 11 are complete. Release `v0.9` records the verified cloud checkpoint. Reviewed Terraform plans removed the workload before its separate state foundation; independent AWS inventories then found no active project compute, storage, network, IAM, SSM, CloudWatch, or S3 resources. The project KMS key is scheduled for AWS-managed deletion. The immediate Cost Explorer value was effectively zero but still estimated, so a delayed billing recheck remains scheduled before final Milestone 11 closure.
 
 ## Portfolio focus
 
@@ -74,6 +74,7 @@ The application and project repository live inside the WSL Linux filesystem. The
 - [`docs/terraform-drift-recreation.md`](docs/terraform-drift-recreation.md) records the reviewed M09 drift, destruction, cleanup, and equivalent recreation exercise.
 - [`docs/integrated-cloud-audit.md`](docs/integrated-cloud-audit.md) connects IAM, network, host, container, delivery, data, monitoring, and recovery evidence and records accepted limitations.
 - [`docs/postmortems/m11-database-dependency-incident.md`](docs/postmortems/m11-database-dependency-incident.md) records the controlled database failure, signal correlation, and verified recovery.
+- [`docs/cloud-teardown.md`](docs/cloud-teardown.md) records the approved workload/backend destruction order, independent empty inventories, state disposition, residual KMS waiting period, and billing-verification boundary.
 
 Private project state, learning notes, environment snapshots, credentials, and sensitive evidence remain outside the public repository.
 

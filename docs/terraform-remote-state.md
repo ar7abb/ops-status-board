@@ -94,3 +94,9 @@ state bucket is removed. Terraform `prevent_destroy` must be removed only during
 the final approved teardown. A successful `terraform destroy` is not sufficient
 evidence by itself; S3 versions, lock objects, the bootstrap state, AWS
 inventory, and delayed billing must also be checked.
+
+The final M11 teardown followed this order. The workload state was proven empty
+before the bootstrap was touched. All versioned state objects and delete markers
+were deliberately removed under explicit approval, followed by the empty bucket.
+Independent AWS inventories then found no project S3 buckets. The remote state
+history is intentionally unrecoverable; the committed configuration is retained.

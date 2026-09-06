@@ -19,7 +19,10 @@ resource "aws_kms_alias" "backups" {
 
 resource "aws_s3_bucket" "backups" {
   bucket_prefix = "${var.project_name}-${var.environment}-backups-"
-  force_destroy = false
+  # M11-T04 is the final evidence-preserving teardown. Sanitized recovery proof
+  # is published at v0.9; encrypted object versions must now be removed with
+  # this project-owned bucket so no chargeable workload storage remains.
+  force_destroy = true
 
   tags = merge(
     local.common_tags,
@@ -29,9 +32,6 @@ resource "aws_s3_bucket" "backups" {
     }
   )
 
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 resource "aws_s3_bucket_ownership_controls" "backups" {

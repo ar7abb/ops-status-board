@@ -1,6 +1,6 @@
 # Ops Status Board Architecture
 
-> **Current status:** The FastAPI and PostgreSQL workload runs as pinned containers on both the separate Ubuntu 24.04 practice VM and a Terraform-managed AWS instance in Europe (Stockholm). Ansible deploys the cloud workload through Systems Manager without inbound SSH. The cloud instance keeps the API loopback-only behind Nginx, uses encrypted Parameter Store runtime values, and omits the heavier local Prometheus/Grafana stack.
+> **Current status:** The FastAPI and PostgreSQL workload remains available locally and on the separate Ubuntu 24.04 practice VM. The verified Terraform-managed AWS workload recorded by `v0.9` has been intentionally removed after the recovery and audit exercises. The committed Terraform, Ansible, and delivery configuration preserves the reproducible design; no active project workload or state bucket remains in AWS.
 
 ## Architecture purpose
 
@@ -50,6 +50,8 @@ PostgreSQL backup -> encrypted private S3 -> timed clean restore
 The cloud core demonstrates infrastructure, identity, secure delivery, monitoring, recovery, drift, destroy, recreate, and billing verification without requiring an always-running public website. Systems Manager replaces inbound SSH. CloudWatch replaces duplicating the full local monitoring stack on a small EC2 instance. The agent publishes root-disk and available-memory metrics every five minutes and ships only the structured Nginx access and error logs with seven-day retention. Terraform evaluates disk, memory, EC2 status, and repeated HTTP 5xx alarms; notification routing remains a separate concern.
 
 The verified delivery trace is source commit -> protected CI -> immutable GHCR digest -> reviewed `production` environment -> GitHub OIDC token -> temporary AWS role -> Systems Manager command -> app-only Docker Compose replacement -> digest, source-revision, `/version`, and readiness gates. Release runs are serialized in GitHub and locked again on the instance. The deployment does not restart PostgreSQL, run migrations, or remove volumes. A nonexistent-digest drill remained visibly failed while the healthy service stayed online; a separate reviewed workflow restored the exact previous digest and full revision. Automatic rollback is intentionally outside the core scope.
+
+After the cloud exercises, reviewed saved plans destroyed the workload before the separate Terraform bootstrap. Sanitized recovery and audit evidence was preserved first; private database backup objects and remote state history were deliberately deleted. Independent service inventories—not Terraform output alone—then verified zero active project compute, storage, networking, IAM, SSM, CloudWatch, and S3 resources. The customer-managed backup key entered AWS's mandatory pending-deletion period, and stale GitHub deployment variables were removed.
 
 The cloud application container runs as a dedicated non-root user with a read-only root filesystem, a bounded temporary `/tmp`, no privilege escalation, and all Linux capabilities dropped. Ansible flushes a changed application definition immediately so a failure in a later independent role cannot leave the rendered Compose file ahead of the running container.
 
