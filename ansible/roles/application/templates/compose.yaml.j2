@@ -25,6 +25,13 @@ services:
     cpus: 0.50
     env_file:
       - {{ ops_secret_dir }}/app.env
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -43,6 +50,13 @@ services:
     image: {{ ops_application_image }}
     env_file:
       - {{ ops_secret_dir }}/app.env
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     depends_on:
       db:
         condition: service_healthy

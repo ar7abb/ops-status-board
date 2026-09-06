@@ -45,3 +45,6 @@
     mode: "0644"
   register: application_compose_definition
   notify: deploy ops status board
+
+- name: Apply a changed application definition before later roles run
+  ansible.builtin.meta: flush_handlers

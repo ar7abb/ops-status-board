@@ -51,6 +51,8 @@ The cloud core demonstrates infrastructure, identity, secure delivery, monitorin
 
 The verified delivery trace is source commit -> protected CI -> immutable GHCR digest -> reviewed `production` environment -> GitHub OIDC token -> temporary AWS role -> Systems Manager command -> app-only Docker Compose replacement -> digest, source-revision, `/version`, and readiness gates. Release runs are serialized in GitHub and locked again on the instance. The deployment does not restart PostgreSQL, run migrations, or remove volumes. A nonexistent-digest drill remained visibly failed while the healthy service stayed online; a separate reviewed workflow restored the exact previous digest and full revision. Automatic rollback is intentionally outside the core scope.
 
+The cloud application container runs as a dedicated non-root user with a read-only root filesystem, a bounded temporary `/tmp`, no privilege escalation, and all Linux capabilities dropped. Ansible flushes a changed application definition immediately so a failure in a later independent role cannot leave the rendered Compose file ahead of the running container.
+
 M09 proved that the workload is reproducible rather than tied to one virtual machine. A reviewed Terraform destroy removed the workload while preserving the separate remote-state foundation and recovery checkpoint. A separately reviewed Terraform plan recreated the same 33 managed-resource addresses with new cloud identities, and Ansible restored the approved application configuration over SSM. HTTP readiness, healthy pinned containers, zero inbound rules, root-only runtime files, Ansible idempotence, and no-change Terraform plans verified equivalence.
 
 ## Security boundaries
