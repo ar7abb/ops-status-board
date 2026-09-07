@@ -1,346 +1,281 @@
 # Ops Status Board
 
-Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
+[![CI](https://github.com/ar7abb/ops-status-board/actions/workflows/ci.yml/badge.svg)](https://github.com/ar7abb/ops-status-board/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/ar7abb/ops-status-board)](https://github.com/ar7abb/ops-status-board/releases/latest)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](pyproject.toml)
+[![Terraform](https://img.shields.io/badge/Terraform-1.16-844FBA?logo=terraform&logoColor=white)](infra/)
+[![AWS](https://img.shields.io/badge/AWS-verified%20lab-232F3E?logo=amazonwebservices&logoColor=white)](docs/integrated-cloud-audit.md)
 
-> **Current status:** Milestones 0–12 are complete. Release `v1.0.0` records the accepted operator-first portfolio. The temporary AWS workload and Terraform backend were removed in a reviewed workload-first, backend-last teardown. Independent inventories found no active project compute, storage, network, IAM, SSM, CloudWatch, or S3 resources; delayed Cost Explorer evidence remained effectively USD 0.00 while still marked estimated. The application remains reproducible locally, but no public cloud service is currently hosted.
+An operator-first DevOps and CloudOps portfolio built around a small FastAPI and
+PostgreSQL incident dashboard. The application is intentionally simple; the
+engineering focus is the complete operational lifecycle around it: build,
+test, package, deploy, secure, observe, back up, recover, troubleshoot, and
+remove.
 
-## Portfolio focus
+**Release:** [`v1.0.0`](https://github.com/ar7abb/ops-status-board/releases/tag/v1.0.0)
 
-The project focuses on practical Junior DevOps and CloudOps responsibilities:
+**Current state:** reproducible locally; the temporary AWS laboratory is
+intentionally offline after a verified workload-first, backend-last teardown.
 
-- Linux and server operations
-- Git and pull-request workflows
-- Docker and Docker Compose
-- Continuous integration and delivery
-- Immutable container images
-- Nginx, systemd, SSH, permissions, and firewall behavior
-- Ansible configuration management
-- Terraform infrastructure management
-- Metrics, logs, alerts, backup, restore, and incident response
-- AWS operations, security controls, and cost management
+## What this project demonstrates
 
-## Current architecture
-
-The current local application flow is:
-
-```text
-Browser or API client
-    → FastAPI route
-    → Pydantic validation
-    → SQLAlchemy session
-    → PostgreSQL
-    → JSON response or Jinja-rendered HTML
-    → structured logs with request IDs
-```
-
-FastAPI provides the HTTP interface and interactive API documentation. Pydantic validates incoming data. SQLAlchemy manages database operations. Alembic versions the PostgreSQL schema. Jinja renders incident data into completed HTML for the browser.
-
-## Core delivery path
-
-1. Build an operable FastAPI and PostgreSQL workload.
-2. Containerize it and run the local stack with Docker Compose.
-3. Test and publish immutable images with GitHub Actions and GHCR.
-4. Operate it manually on a separate Ubuntu practice server.
-5. Reproduce the server configuration with Ansible.
-6. Monitor, investigate, back up, fail, and restore the local service.
-7. Reproduce the relevant infrastructure and delivery workflow in AWS.
-8. Preserve evidence, remove cloud resources, and complete the portfolio.
-
-The approved roadmap contains 69 tasks across milestones M00–M12 and targets approximately 12–16 weeks of focused work.
-
-## Environments
-
-| Environment | Purpose |
+| Area | Implemented and verified |
 |---|---|
-| Windows | Host platform, browser, and terminal access |
-| Ubuntu 24.04 under WSL2 | Linux development and automation workstation |
-| Separate VirtualBox VM | Server deployment and operations practice beginning in M05 |
-| AWS | Cost-controlled Terraform, SSM, Ansible, EC2, IAM, networking, and private encrypted storage implementation |
+| Application operations | FastAPI, PostgreSQL, SQLAlchemy, Alembic migrations, Nginx, health/readiness/version endpoints, structured request-ID logging |
+| Containers | Multi-stage non-root image, Docker Compose, private database network, persistent volume, health checks, immutable image digests |
+| CI/CD | GitHub Actions quality/security/container gates, GHCR publishing, protected environments, serialized releases, failed-deployment preservation, manual rollback |
+| Infrastructure as code | Separate Terraform bootstrap/workload roots, versioned remote state, native state locking, plan review, drift correction, destroy/recreate proof |
+| Configuration management | Reusable Ansible roles, first-run deployment, idempotence, drift correction, server hardening, systemd services and timers |
+| AWS and identity | VPC, EC2, encrypted EBS/S3/KMS, IAM least privilege, SSM administration without inbound SSH, GitHub OIDC temporary credentials |
+| Observability | Prometheus/Grafana locally; CloudWatch logs, custom metrics, metric filters, and disk/memory/status/HTTP 5xx alarms in AWS |
+| Reliability | Scheduled PostgreSQL backups, checksums, encrypted S3 copy, isolated restore, measured recovery, controlled database incident and postmortem |
+| Cost and cleanup | Explicit cost gates, tagged resources, independent post-destroy inventories, delayed billing review, documented KMS deletion waiting period |
 
-The application and project repository live inside the WSL Linux filesystem. The VirtualBox VM remains a separate server environment.
+The [evidence index](docs/evidence/README.md) maps every portfolio claim to code,
+tests, runbooks, pull requests, postmortems, or releases.
 
-## Documentation
+## Architecture
 
-- [`docs/architecture.md`](docs/architecture.md) describes current and planned system boundaries.
-- [`docs/roadmap.md`](docs/roadmap.md) summarizes the operator-first delivery sequence.
-- [`docs/backlog.md`](docs/backlog.md) contains optional extensions.
-- [`docs/blueprint-changelog.md`](docs/blueprint-changelog.md) records approved planning changes.
-- [`docs/glossary.md`](docs/glossary.md) defines project terminology.
-- [`docs/lessons-learned.md`](docs/lessons-learned.md) records selected technical lessons.
-- [`docs/runbooks.md`](docs/runbooks.md) routes operators to local, VM, cloud, observability, recovery, and delivery procedures.
-- [`docs/evidence/README.md`](docs/evidence/README.md) maps portfolio claims to code, runbooks, postmortems, pull requests, and releases.
-- [`docs/recovery-runbook.md`](docs/recovery-runbook.md) documents PostgreSQL backup and clean restore verification.
-- [`docs/observability.md`](docs/observability.md) records the local monitoring architecture, capacity budget, image-security decision, and verification evidence.
-- [`docs/cloudwatch-observability.md`](docs/cloudwatch-observability.md) records the AWS signal flow, alarm policy, cost boundary, verification, and recovery path.
-- [`docs/github-oidc-delivery.md`](docs/github-oidc-delivery.md) explains the protected GitHub-to-AWS identity exchange, trust boundary, narrow SSM permissions, and recovery path.
-- [`docs/terraform-drift-recreation.md`](docs/terraform-drift-recreation.md) records the reviewed M09 drift, destruction, cleanup, and equivalent recreation exercise.
-- [`docs/integrated-cloud-audit.md`](docs/integrated-cloud-audit.md) connects IAM, network, host, container, delivery, data, monitoring, and recovery evidence and records accepted limitations.
-- [`docs/postmortems/m11-database-dependency-incident.md`](docs/postmortems/m11-database-dependency-incident.md) records the controlled database failure, signal correlation, and verified recovery.
-- [`docs/cloud-teardown.md`](docs/cloud-teardown.md) records the approved workload/backend destruction order, independent empty inventories, state disposition, residual KMS waiting period, and billing-verification boundary.
+```mermaid
+flowchart LR
+    User[Browser / API client] --> Entry[Local loopback or deployed Nginx]
+    Entry --> API[FastAPI application]
+    API --> DB[(PostgreSQL)]
+    API --> Logs[Structured logs]
+    API --> Metrics[Prometheus metrics]
 
-Private project state, learning notes, environment snapshots, credentials, and sensitive evidence remain outside the public repository.
+    CI[GitHub Actions] --> Registry[GHCR immutable image]
+    CI -->|OIDC temporary credentials| AWS[AWS deployment role]
+    AWS -->|SSM command, no inbound SSH| Host[EC2 host]
+    Host --> Entry
 
-## Local development setup
-
-Create and activate a project-specific Python virtual environment:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
+    Terraform[Terraform] --> AWSInfra[VPC / EC2 / IAM / S3 / KMS / CloudWatch]
+    Ansible[Ansible over SSM] --> Host
+    DB --> Backup[Encrypted PostgreSQL backup]
+    Backup --> S3[(Versioned S3 recovery storage)]
+    Logs --> CloudWatch[CloudWatch logs and alarms]
 ```
 
-Install the hash-locked development dependencies:
+The active local path is loopback-published FastAPI → PostgreSQL. The separate
+VM and AWS deployments placed Nginx in front of FastAPI. The AWS path above was
+created, tested, destroyed, recreated, operated, and finally removed. Its
+configuration and sanitized evidence remain versioned; no public cloud service
+is currently running.
+
+Read the detailed [architecture](docs/architecture.md) and
+[integrated cloud audit](docs/integrated-cloud-audit.md).
+
+## Verified operational results
+
+- **Fresh-clone acceptance:** 77 tests passed, 2 skipped, and 18 subtests
+  passed; lint, formatting, Compose build/migration/health, and both Terraform
+  roots also passed.
+- **Dependency failure:** stopping PostgreSQL kept liveness at HTTP `200` while
+  readiness safely changed to `503`; recovery returned readiness to `200` with
+  persisted data intact.
+- **Cloud recovery:** a checksum-verified encrypted PostgreSQL backup restored
+  into an isolated target in 15 seconds during the measured lab exercise. The
+  scheduled backup interval gives an approximately 24-hour RPO boundary while
+  the source instance is online.
+- **Reproducibility:** Terraform detected manual drift and reproduced the AWS
+  workload after an approved destroy; Ansible then restored the pinned workload
+  and repeated with `changed=0`.
+- **Secure delivery:** a protected workflow used GitHub OIDC, a pinned image
+  digest, SSM, health gates, a visible failed release, and a separate manual
+  rollback to the prior healthy digest.
+- **Teardown:** independent inventories found no active project compute,
+  storage, network, IAM, SSM, CloudWatch, or S3 resources. Delayed Cost Explorer
+  evidence was effectively USD 0.00 but still estimated, not a finalized bill.
+
+See the [final acceptance report](docs/final-acceptance.md) for the complete
+verification and limitation boundary.
+
+## Quick local demonstration
+
+### Prerequisites
+
+- Git
+- Docker Engine with the Docker Compose plugin
+- `curl`
+
+Clone the repository and create private local configuration:
 
 ```bash
-python -m pip install --require-hashes -r requirements-dev.txt
-python -m pip install --no-deps --editable .
-python -m pip check
-```
-
-Create a private local configuration file:
-
-```bash
-cp .env.example .env
-```
-
-Replace every placeholder in `.env` with a local value. The real `.env` is ignored by Git and must never be committed.
-
-The application expects a PostgreSQL instance matching the private `DATABASE_URL`.
-
-## Local Docker Compose
-
-Use Docker Compose to run the application and PostgreSQL together on a local machine. Docker and the Docker Compose plugin must be installed first.
-
-Create private configuration files from the safe templates:
-
-```bash
+git clone https://github.com/ar7abb/ops-status-board.git
+cd ops-status-board
 cp .env.example .env
 cp postgres.env.example postgres.env
 ```
 
-Replace every placeholder. Keep `.env` for application settings and `postgres.env` for PostgreSQL initialization settings. For Compose, the hostname in `DATABASE_URL` is `db`, because `db` is the private database service name. The PostgreSQL database name, user, and password must match across the two files.
+Replace every placeholder in `.env` and `postgres.env`. For Compose,
+`DATABASE_URL` must use hostname `db`, and the database name, user, and password
+must match the PostgreSQL file. These private files are ignored by Git.
 
-Validate configuration and start PostgreSQL:
+Start the database, apply migrations, and start the application:
 
 ```bash
 docker compose config --quiet
 docker compose up --detach db
-```
-
-Apply outstanding database migrations, then start the application:
-
-```bash
 docker compose run --rm migrate
-docker compose up --detach app
+docker compose up --detach --wait app
 ```
 
-Verify readiness and container health:
+Verify the running system:
 
 ```bash
-curl -i http://127.0.0.1:8000/health/ready
 docker compose ps
+curl --fail http://127.0.0.1:8000/health/live
+curl --fail http://127.0.0.1:8000/health/ready
+curl --fail http://127.0.0.1:8000/version
 ```
 
-The application is intentionally bound to `127.0.0.1:8000`. PostgreSQL has no host-published port and is reachable only by services on the Compose network.
+Open these local interfaces:
 
-Stop the stack with:
+| Interface | URL |
+|---|---|
+| Incident dashboard | `http://127.0.0.1:8000/` |
+| Interactive API documentation | `http://127.0.0.1:8000/docs` |
+| OpenAPI document | `http://127.0.0.1:8000/openapi.json` |
+
+Stop the stack while retaining database data:
 
 ```bash
 docker compose down
 ```
 
-This removes containers and the network but keeps the named database volume. Use `docker compose down -v` only when you intentionally want to delete local database data.
+`docker compose down --volumes` deliberately deletes the local database volume.
+Use it only for disposable data. The complete healthy/failure/recovery walkthrough
+is in the [demo runbook](docs/demo-runbook.md).
 
-## Database migrations
-
-Database schema changes are versioned with Alembic.
-
-The commands in this section assume PostgreSQL is reachable directly from WSL. When using Docker Compose, run schema commands through the temporary `migrate` service shown above.
-
-Apply all migrations:
-
-```bash
-python -m alembic upgrade head
-```
-
-Inspect the current database revision:
-
-```bash
-python -m alembic current
-```
-
-Confirm that the SQLAlchemy models and database schema remain aligned:
-
-```bash
-python -m alembic check
-```
-
-Use migration downgrades only after reviewing their data-loss risk. The initial `downgrade base` exercise is intended only for an empty disposable development database.
-
-## Run without Docker
-
-Start FastAPI directly from WSL, rather than through Docker Compose:
-
-```bash
-python -m uvicorn ops_status_board.app:create_app \
-  --factory \
-  --app-dir src \
-  --host 127.0.0.1 \
-  --port 8765 \
-  --no-access-log
-```
-
-Available local interfaces:
-
-| Interface | URL |
-|---|---|
-| Dashboard | `http://127.0.0.1:8765/` |
-| Interactive API documentation | `http://127.0.0.1:8765/docs` |
-| OpenAPI document | `http://127.0.0.1:8765/openapi.json` |
-
-## Incident workflow
+## API and operational contracts
 
 | Method | Path | Purpose | Authentication |
 |---|---|---|---|
-| `GET` | `/` | Render the incident dashboard as completed HTML | Public |
-| `GET` | `/api/incidents` | List incidents as JSON | Public |
-| `GET` | `/api/incidents/{incident_id}` | Return one incident or `404` | Public |
-| `POST` | `/api/incidents` | Validate and create an incident | Bearer token |
-| `PUT` | `/api/incidents/{incident_id}` | Validate and replace an incident or return `404` | Bearer token |
+| `GET` | `/` | Render the incident dashboard | Public |
+| `GET` | `/api/incidents` | List incidents | Public |
+| `POST` | `/api/incidents` | Create a validated incident | Bearer token |
+| `PUT` | `/api/incidents/{id}` | Fully replace an incident | Bearer token |
+| `GET` | `/health/live` | Confirm the application process responds | Public |
+| `GET` | `/health/ready` | Confirm PostgreSQL is usable | Public |
+| `GET` | `/version` | Return the configured release identity | Public |
+| `GET` | `/metrics` | Expose minimal Prometheus metrics | Bearer token |
 
-Supported severity values:
+Writes validate severity (`low`, `medium`, `high`, `critical`) and status
+(`investigating`, `identified`, `monitoring`, `resolved`). Invalid input is
+rejected before reaching PostgreSQL. Unknown incidents return `404`, invalid
+payloads return `422`, and unauthorized writes return `401`.
 
-- `low`
-- `medium`
-- `high`
-- `critical`
+## Security design
 
-Supported status values:
+- Required configuration fails closed at startup.
+- Secrets, credentials, real environment files, Terraform state, plans, and
+  backups are excluded from Git.
+- The application container runs as a non-root user with a read-only root
+  filesystem, temporary `/tmp`, no privilege escalation, and dropped Linux
+  capabilities.
+- PostgreSQL has no host-published port; only FastAPI is published to the host's
+  loopback interface. The VM and AWS deployments used Nginx as their entry point.
+- Query strings, authorization headers, request bodies, and secret values are
+  excluded from request logs.
+- AWS administration used outbound HTTPS through Systems Manager with zero
+  inbound security-group rules rather than internet-exposed SSH.
+- GitHub Actions used restricted OIDC trust and short-lived AWS credentials
+  rather than stored long-lived access keys.
+- S3 backups used versioning, public-access blocking, TLS enforcement, and a
+  customer-managed KMS key.
 
-- `investigating`
-- `identified`
-- `monitoring`
-- `resolved`
+This was a learning laboratory, not a production compliance certification. See
+the accepted findings and limitations in the
+[integrated audit](docs/integrated-cloud-audit.md).
 
-A resolved incident must include `resolved_at`. An active incident must not include a resolved timestamp.
+## Validation
 
-Invalid input is rejected before it reaches PostgreSQL. An unknown incident returns `404`, invalid data returns `422`, and an unauthenticated write returns `401`.
-`PUT` is a full replacement: send the same complete payload used for `POST`.
+Create a Python 3.12 virtual environment and install the locked dependencies:
 
-## Operational endpoints
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --require-hashes -r requirements-dev.txt
+python -m pip install --no-deps --editable .
+python -m pip check
+```
 
-| Method | Path | Purpose | Authentication |
-|---|---|---|---|
-| `GET` | `/health/live` | Confirm the HTTP application process is running; it never queries PostgreSQL | Public |
-| `GET` | `/health/ready` | Confirm a minimal PostgreSQL query succeeds | Public |
-| `GET` | `/version` | Return the configured application version | Public |
-| `GET` | `/metrics` | Return minimal Prometheus-compatible process metrics | Bearer token |
-
-Liveness and readiness answer different operator questions: liveness detects whether the application process can respond, while readiness detects whether it can currently use its database. A database failure therefore leaves liveness at `200` but makes readiness return `503` with a safe `Not ready` response.
-
-Metrics remain protected because they are intended for a trusted monitoring client, not public discovery.
-
-## Configuration and security
-
-Startup validates required configuration before the application serves requests.
-
-Required settings include:
-
-- `DATABASE_URL`
-- `ADMIN_API_TOKEN`
-- `APP_VERSION`
-- `APP_ENVIRONMENT`
-
-The application follows these security rules:
-
-- Real `.env` files never enter Git.
-- Database passwords and bearer tokens never appear in client errors.
-- Request logs omit query strings.
-- Authentication headers and submitted tokens are not logged.
-- Every response receives an `X-Request-ID`.
-- Unexpected failures return a generic response with a traceable request ID.
-- Database sessions roll back uncommitted work after failures.
-- Protected writes use constant-time token comparison.
-- PostgreSQL is not host-published by Docker Compose; only Compose services can reach it.
-
-## Logging behavior
-
-Development logs are human-readable. Production logs use structured JSON.
-
-Routine request logs include:
-
-- timestamp
-- log level
-- request ID
-- HTTP method
-- URL path
-- response status
-- request duration
-
-Logs do not include the complete URL, query parameters, request body, database password, or admin token.
-
-## Verification
-
-Run the following application-quality checks before committing or opening a pull request:
+Run the primary local checks:
 
 ```bash
 python -m pytest -q
 ruff check .
 ruff format --check .
-python -m pip check
 git diff --check
 ```
 
-Use the schema verification command that matches the database location:
-
-- **Host Python workflow:** use this when `DATABASE_URL` points to PostgreSQL reachable directly from WSL.
-
-  ```bash
-  python -m alembic check
-  ```
-
-- **Docker Compose workflow:** use this when `DATABASE_URL` uses the private Compose hostname `db`.
-
-  ```bash
-  docker compose run --rm migrate alembic check
-  ```
-
-### Opt-in PostgreSQL integration tests
-
-`tests/test_postgres_integration.py` uses only the disposable local
-`ops_status_board_test` database. It is skipped unless explicitly enabled.
-
-Create that database locally and run migrations first. Then run:
+Validate Terraform without contacting the removed backend:
 
 ```bash
-RUN_POSTGRES_INTEGRATION=1 python -m pytest -q tests/test_postgres_integration.py
+terraform -chdir=infra/bootstrap init -backend=false
+terraform -chdir=infra/bootstrap validate
+terraform -chdir=infra/aws init -backend=false
+terraform -chdir=infra/aws validate
 ```
 
-The tests verify the database name before modifying data and clean up test
-incidents afterward.
+The protected CI workflow additionally runs container smoke tests, security
+scanning, Terraform validation, and CI trust checks.
 
-A release candidate must also prove that:
+## Repository map
 
-- dependencies install in a clean environment;
-- migrations build an empty database;
-- expected API and dashboard workflows succeed;
-- authentication and validation failures are safe;
-- no secret or private state is tracked by Git; and
-- the working tree contains only reviewed project changes.
+```text
+src/                    FastAPI application, models, schemas, and templates
+tests/                  Unit, operational, release-safety, and integration tests
+migrations/             Alembic database migrations
+compose.yaml            Local application and PostgreSQL lifecycle
+Dockerfile              Multi-stage non-root application image
+ansible/                Server configuration and deployment roles/playbooks
+infra/bootstrap/        Terraform remote-state foundation
+infra/aws/              Terraform AWS workload and delivery infrastructure
+.github/workflows/      CI, image publication, and protected cloud release
+scripts/                State validation and cloud-release safety helpers
+docs/                   Architecture, runbooks, evidence, postmortems, and defense
+```
 
-## Workflow and safety
+## Documentation and evidence
 
-- Work on one task at a time.
-- Use focused feature branches.
-- Related tasks may share a branch and pull request.
-- Review staged changes before creating a commit.
-- Do not commit secrets, private keys, credentials, real `.env` files, Terraform state, backups, or private-control records.
-- Do not create chargeable AWS resources without a current cost review and explicit approval.
-- Keep out-of-pocket cloud spending at or below USD $5 per month.
+- [Evidence index](docs/evidence/README.md) — claims mapped to proof
+- [Runbook index](docs/runbooks.md) — task-oriented operating procedures
+- [Architecture](docs/architecture.md) — local, VM, and AWS boundaries
+- [Cloud release runbook](docs/cloud-release-runbook.md) — OIDC/SSM digest delivery and rollback
+- [Recovery runbook](docs/recovery-runbook.md) — backup validation and isolated restore
+- [Database incident postmortem](docs/postmortems/m11-database-dependency-incident.md) — signal correlation and recovery
+- [Cloud teardown](docs/cloud-teardown.md) — destruction order, inventory, and billing boundary
+- [Project defense](docs/project-defense.md) — interview-ready technical explanations
+- [Career stories](docs/career-stories.md) — evidence-bounded résumé bullets and STAR examples
+- [Roadmap](docs/roadmap.md) — milestone and release progression
 
-## Current next step
+## Limitations and production evolution
 
-Complete the screenshot-based local demonstration and career-story package for
-M12-T02. The AWS workload remains intentionally absent; cloud claims use the
-sanitized evidence index and immutable release history rather than implying a
-currently hosted service.
+The verified cloud design used one EC2 instance, one local PostgreSQL container,
+public IPv4 with no inbound rules, and broad outbound HTTPS. It proves automation,
+identity, observability, recovery, and operations—not high availability or
+production scale.
+
+A production evolution would add multiple availability zones, load balancing,
+autoscaling, a managed multi-AZ database, private subnets and VPC endpoints,
+centralized secret rotation, notification/on-call routing, larger load and
+recovery tests, and stronger environment isolation.
+
+Optional extensions are tracked separately in the [backlog](docs/backlog.md) and
+do not weaken the completed `v1.0.0` acceptance.
+
+## Release history
+
+| Release | Scope |
+|---|---|
+| `v0.1` | Application, database, API, health, and logging foundations |
+| `v0.2` | Containers, CI, scanning, and immutable image publishing |
+| `v0.3.0` | Manual VM operations, Ansible, local monitoring, backup, and recovery |
+| `v0.4` | Terraform/AWS creation, SSM deployment, drift, destroy, and recreation |
+| `v0.5` | CloudWatch and protected OIDC/SSM delivery with failure and rollback |
+| `v0.9` | Encrypted restore, incident response, integrated audit, and teardown checkpoint |
+| [`v1.0.0`](https://github.com/ar7abb/ops-status-board/releases/tag/v1.0.0) | Demonstration, clean-clone acceptance, evidence package, defense, and final portfolio acceptance |
+
+The historical cloud checkpoints preserve what was verified before teardown;
+the repository’s current status remains intentionally offline and cost-bounded.
