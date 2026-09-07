@@ -22,11 +22,18 @@ The core contains 69 sequential tasks across 13 milestones, M00–M12.
 | M11 — Cloud recovery, audit, and teardown | Restore from S3, investigate failure, audit the system, and verify cleanup/billing | v0.9 |
 | M12 — Portfolio completion | Publish reproducible evidence, demo/career materials, clean-clone acceptance, and project defense | v1.0.0 |
 
-## Ownership model
+## Evidence and ownership model
 
-The learner personally operates Linux, Git, containers, pipelines, Nginx, systemd, SSH/firewall controls, Ansible, Terraform, monitoring, recovery, and AWS. Each task includes at least one meaningful operation, investigation, troubleshooting step, or configuration/automation modification.
+The application is a deliberately small workload used to demonstrate the
+surrounding operational lifecycle. Portfolio claims focus on verified operation,
+configuration, review, troubleshooting, recovery, and automation across Linux,
+Git, containers, pipelines, Nginx, systemd, access controls, Ansible, Terraform,
+monitoring, and AWS.
 
-Evidence distinguishes authored or configured work from operated, reviewed, and troubleshot work. Memorizing syntax is not required; understanding purpose, risk, verification, and recovery is required.
+Evidence distinguishes application implementation from infrastructure and
+operational work. It does not treat running generated commands as proof of
+independent authorship or understanding. Memorizing syntax is not required;
+explaining purpose, risk, verification, failure behavior, and recovery is.
 
 ## Fixed core direction
 

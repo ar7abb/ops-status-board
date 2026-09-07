@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0–10 and the recovery, incident, audit, and operational teardown portions of Milestone 11 are complete. Release `v0.9` records the verified cloud checkpoint. Reviewed Terraform plans removed the workload before its separate state foundation; independent AWS inventories then found no active project compute, storage, network, IAM, SSM, CloudWatch, or S3 resources. The project KMS key is scheduled for AWS-managed deletion. The immediate Cost Explorer value was effectively zero but still estimated, so a delayed billing recheck remains scheduled before final Milestone 11 closure.
+> **Current status:** Milestones 0–11 are complete. Release `v0.9` records the verified cloud checkpoint, and the temporary AWS workload has since been removed in a reviewed workload-first, backend-last teardown. A delayed follow-up found no active project compute, storage, network, IAM, SSM, CloudWatch, or S3 resources; Cost Explorer remained effectively USD 0.00 while still marked estimated. Milestone 12 is packaging the verified work for final `v1.0.0` acceptance.
 
 ## Portfolio focus
 
@@ -67,6 +67,8 @@ The application and project repository live inside the WSL Linux filesystem. The
 - [`docs/blueprint-changelog.md`](docs/blueprint-changelog.md) records approved planning changes.
 - [`docs/glossary.md`](docs/glossary.md) defines project terminology.
 - [`docs/lessons-learned.md`](docs/lessons-learned.md) records selected technical lessons.
+- [`docs/runbooks.md`](docs/runbooks.md) routes operators to local, VM, cloud, observability, recovery, and delivery procedures.
+- [`docs/evidence/README.md`](docs/evidence/README.md) maps portfolio claims to code, runbooks, postmortems, pull requests, and releases.
 - [`docs/recovery-runbook.md`](docs/recovery-runbook.md) documents PostgreSQL backup and clean restore verification.
 - [`docs/observability.md`](docs/observability.md) records the local monitoring architecture, capacity budget, image-security decision, and verification evidence.
 - [`docs/cloudwatch-observability.md`](docs/cloudwatch-observability.md) records the AWS signal flow, alarm policy, cost boundary, verification, and recovery path.
@@ -338,4 +340,7 @@ A release candidate must also prove that:
 
 ## Current next step
 
-Begin M11-T01 with a read-only recovery preflight: verify the private backup, current workload health, recovery target, cost boundary, and exact cleanup exclusions before changing cloud state.
+Complete the screenshot-based local demonstration and career-story package for
+M12-T02. The AWS workload remains intentionally absent; cloud claims use the
+sanitized evidence index and immutable release history rather than implying a
+currently hosted service.

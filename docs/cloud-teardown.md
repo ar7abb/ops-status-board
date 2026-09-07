@@ -94,10 +94,13 @@ The immediate current-month Cost Explorer query returned an estimated amount
 effectively equal to USD 0.00. This is an immediate estimate, not finalized
 post-teardown billing, because AWS usage and credits can appear later.
 
-A delayed read-only check is scheduled to repeat both project inventory and the
-billing query. Milestone 11 is operationally torn down, but its final billing gate
-remains open until that result is recorded. `terraform destroy` does not prove an
-instant final invoice amount.
+A delayed read-only check on 2026-09-07 repeated the complete project inventory:
+all checked resource categories remained zero, both Terraform states remained
+empty, and the KMS deletion remained scheduled. Cost Explorer returned an
+estimated amount effectively equal to USD 0.00. The result closes the delayed
+Milestone 11 gate without misrepresenting estimated data as a finalized invoice.
+`terraform destroy` did not provide this evidence; the later independent checks
+did.
 
 ## Junior DevOps lessons
 
