@@ -246,9 +246,6 @@ docs/                   Architecture, runbooks, evidence, postmortems, and defen
 - [Recovery runbook](docs/recovery-runbook.md) — backup validation and isolated restore
 - [Database incident postmortem](docs/postmortems/m11-database-dependency-incident.md) — signal correlation and recovery
 - [Cloud teardown](docs/cloud-teardown.md) — destruction order, inventory, and billing boundary
-- [Project defense](docs/project-defense.md) — interview-ready technical explanations
-- [Career stories](docs/career-stories.md) — evidence-bounded résumé bullets and STAR examples
-- [Roadmap](docs/roadmap.md) — milestone and release progression
 
 ## Limitations and production evolution
 
@@ -262,8 +259,8 @@ autoscaling, a managed multi-AZ database, private subnets and VPC endpoints,
 centralized secret rotation, notification/on-call routing, larger load and
 recovery tests, and stronger environment isolation.
 
-Optional extensions are tracked separately in the [backlog](docs/backlog.md) and
-do not weaken the completed `v1.0.0` acceptance.
+Optional production improvements are listed above; they are intentionally
+outside the completed `v1.0.0` laboratory scope.
 
 ## Release history
 
@@ -275,7 +272,7 @@ do not weaken the completed `v1.0.0` acceptance.
 | `v0.4` | Terraform/AWS creation, SSM deployment, drift, destroy, and recreation |
 | `v0.5` | CloudWatch and protected OIDC/SSM delivery with failure and rollback |
 | `v0.9` | Encrypted restore, incident response, integrated audit, and teardown checkpoint |
-| [`v1.0.0`](https://github.com/ar7abb/ops-status-board/releases/tag/v1.0.0) | Demonstration, clean-clone acceptance, evidence package, defense, and final portfolio acceptance |
+| [`v1.0.0`](https://github.com/ar7abb/ops-status-board/releases/tag/v1.0.0) | Demonstration, clean-clone acceptance, evidence package, and final portfolio acceptance |
 
 The historical cloud checkpoints preserve what was verified before teardown;
 the repository’s current status remains intentionally offline and cost-bounded.

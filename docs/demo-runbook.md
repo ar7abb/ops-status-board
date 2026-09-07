@@ -19,8 +19,8 @@ curl --fail http://127.0.0.1:8000/version
 ```
 
 Expected evidence is two healthy containers, two `{"status":"ok"}` health
-responses, and an explicit application version. Nginx is the only published
-entry point; the application and database remain private to the Compose network.
+responses, and an explicit application version. FastAPI is published only on
+the host loopback interface; PostgreSQL remains private to the Compose network.
 
 ## 2. Create and read an incident
 
@@ -37,8 +37,9 @@ curl --fail \
 curl --fail http://127.0.0.1:8000/api/incidents
 ```
 
-Open `http://127.0.0.1:8000/`. The incident proves the browser, proxy, API, and
-database path works end to end.
+Open `http://127.0.0.1:8000/`. The incident proves the local browser, API, and
+database path works end to end. The separate VM/AWS deployment adds Nginx in
+front of FastAPI.
 
 ## 3. Demonstrate dependency failure
 

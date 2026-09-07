@@ -21,15 +21,15 @@ the current architecture and teardown record explicitly state that it is not.
 | Claim | Evidence |
 |---|---|
 | Configuration fails closed and secrets stay out of responses/logs | [`src/ops_status_board/config.py`](../../src/ops_status_board/config.py), [`src/ops_status_board/observability.py`](../../src/ops_status_board/observability.py), [`tests/`](../../tests/) |
-| Migrations create and evolve PostgreSQL schema | [`migrations/`](../../migrations/), [`README.md`](../../README.md#database-migrations) |
-| Liveness and readiness represent different failure boundaries | [`src/ops_status_board/routes.py`](../../src/ops_status_board/routes.py), [`README.md`](../../README.md#operational-endpoints) |
-| Incident API validates authenticated writes | [`tests/test_incident_routes.py`](../../tests/test_incident_routes.py), [`README.md`](../../README.md#incident-workflow) |
+| Migrations create and evolve PostgreSQL schema | [`migrations/`](../../migrations/), [`compose.yaml`](../../compose.yaml), [`README.md`](../../README.md#quick-local-demonstration) |
+| Liveness and readiness represent different failure boundaries | [`src/ops_status_board/routes.py`](../../src/ops_status_board/routes.py), [`README.md`](../../README.md#api-and-operational-contracts) |
+| Incident API validates authenticated writes | [`tests/test_incident_routes.py`](../../tests/test_incident_routes.py), [`README.md`](../../README.md#api-and-operational-contracts) |
 
 ## Containers and continuous delivery
 
 | Claim | Evidence |
 |---|---|
-| Compose keeps PostgreSQL private and uses health-gated services | [`compose.yaml`](../../compose.yaml), [`README.md`](../../README.md#local-docker-compose) |
+| Compose keeps PostgreSQL private and uses health-gated services | [`compose.yaml`](../../compose.yaml), [`README.md`](../../README.md#quick-local-demonstration) |
 | Application image is non-root, health checked, and reproducible | [`Dockerfile`](../../Dockerfile), [release `v0.2`](https://github.com/ar7abb/ops-status-board/releases/tag/v0.2) |
 | Pull requests run quality, Terraform, security, and container checks | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml), [PR #65](https://github.com/ar7abb/ops-status-board/pull/65) |
 | Cloud releases use immutable digests and explicit rollback | [`docs/cloud-release-runbook.md`](../cloud-release-runbook.md), [release `v0.5`](https://github.com/ar7abb/ops-status-board/releases/tag/v0.5) |
@@ -75,10 +75,8 @@ the current architecture and teardown record explicitly state that it is not.
 | Claim | Evidence |
 |---|---|
 | A local end-to-end demonstration covers startup, an authenticated incident, dependency failure, recovery, and cleanup | [`docs/demo-runbook.md`](../demo-runbook.md), [`m12-local-demo.txt`](m12-local-demo.txt) |
-| Public résumé bullets and interview stories are bounded by verified project evidence | [`docs/career-stories.md`](../career-stories.md) |
 | The live process stayed healthy while database-dependent readiness failed safely | [`m12-local-demo.txt`](m12-local-demo.txt) |
 | A disposable fresh clone passed dependencies, tests, lint, containers, migrations, health, and Terraform validation | [`fresh-clone-acceptance.md`](fresh-clone-acceptance.md) |
-| Architecture, security, troubleshooting, recovery, cost, and scaling answers are tied to evidence | [`docs/project-defense.md`](../project-defense.md) |
 
 ## Release checkpoints
 
@@ -90,8 +88,7 @@ the current architecture and teardown record explicitly state that it is not.
 | [`v0.4`](https://github.com/ar7abb/ops-status-board/releases/tag/v0.4) | Terraform/AWS creation, SSM deployment, drift, destroy, and recreation |
 | [`v0.5`](https://github.com/ar7abb/ops-status-board/releases/tag/v0.5) | CloudWatch, protected OIDC delivery, immutable deployment, failure, and rollback |
 | [`v0.9`](https://github.com/ar7abb/ops-status-board/releases/tag/v0.9) | Encrypted restore, database incident response, integrated audit, and pre-teardown checkpoint |
-| [`v1.0.0`](https://github.com/ar7abb/ops-status-board/releases/tag/v1.0.0) | Sanitized demo, career evidence, clean-clone acceptance, project defense, teardown reconciliation, and final portfolio acceptance |
+| [`v1.0.0`](https://github.com/ar7abb/ops-status-board/releases/tag/v1.0.0) | Sanitized demo, clean-clone acceptance, teardown reconciliation, and final portfolio acceptance |
 
-Final `v1.0.0` records the completed screenshot-based demonstration, clean-clone
-acceptance, project-defense material, final secret/link checks, and teardown/
-billing reconciliation.
+Final `v1.0.0` records the completed local demonstration, clean-clone
+acceptance, final secret/link checks, and teardown/billing reconciliation.
