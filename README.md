@@ -2,7 +2,7 @@
 
 Ops Status Board is an operator-first DevOps and CloudOps portfolio project. It uses a small FastAPI and PostgreSQL incident dashboard as a realistic workload for learning how to build, configure, test, deliver, secure, observe, back up, recover, and remove a service.
 
-> **Current status:** Milestones 0–11 are complete. Release `v0.9` records the verified cloud checkpoint, and the temporary AWS workload has since been removed in a reviewed workload-first, backend-last teardown. A delayed follow-up found no active project compute, storage, network, IAM, SSM, CloudWatch, or S3 resources; Cost Explorer remained effectively USD 0.00 while still marked estimated. Milestone 12 is packaging the verified work for final `v1.0.0` acceptance.
+> **Current status:** Milestones 0–12 are complete. Release `v1.0.0` records the accepted operator-first portfolio. The temporary AWS workload and Terraform backend were removed in a reviewed workload-first, backend-last teardown. Independent inventories found no active project compute, storage, network, IAM, SSM, CloudWatch, or S3 resources; delayed Cost Explorer evidence remained effectively USD 0.00 while still marked estimated. The application remains reproducible locally, but no public cloud service is currently hosted.
 
 ## Portfolio focus
 
