@@ -90,7 +90,8 @@ the current architecture and teardown record explicitly state that it is not.
 | [`v0.4`](https://github.com/ar7abb/ops-status-board/releases/tag/v0.4) | Terraform/AWS creation, SSM deployment, drift, destroy, and recreation |
 | [`v0.5`](https://github.com/ar7abb/ops-status-board/releases/tag/v0.5) | CloudWatch, protected OIDC delivery, immutable deployment, failure, and rollback |
 | [`v0.9`](https://github.com/ar7abb/ops-status-board/releases/tag/v0.9) | Encrypted restore, database incident response, integrated audit, and pre-teardown checkpoint |
+| [`v1.0.0`](https://github.com/ar7abb/ops-status-board/releases/tag/v1.0.0) | Sanitized demo, career evidence, clean-clone acceptance, project defense, teardown reconciliation, and final portfolio acceptance |
 
-Final `v1.0.0` is created only after screenshot-based demonstration, clean-clone
+Final `v1.0.0` records the completed screenshot-based demonstration, clean-clone
 acceptance, project-defense material, final secret/link checks, and teardown/
-billing reconciliation pass.
+billing reconciliation.
