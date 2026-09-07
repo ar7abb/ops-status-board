@@ -1,0 +1,23 @@
+M12-T02 sanitized local demonstration
+Date: 2026-09-07
+
+Healthy path
+- Docker Compose application: healthy
+- Docker Compose database: healthy
+- GET /health/live: HTTP 200
+- GET /health/ready: HTTP 200
+- GET /version: m12-local-demo
+- Recorded incidents: 1
+
+Controlled database failure
+- GET /health/live: HTTP 200
+- GET /health/ready: HTTP 503
+
+Recovery
+- Database restarted and became healthy
+- GET /health/ready: HTTP 200
+- Recorded incidents after restart: 1
+
+Conclusion
+The process remained alive during dependency failure, readiness failed safely,
+and the persisted incident remained available after database recovery.

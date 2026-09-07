@@ -70,6 +70,14 @@ the current architecture and teardown record explicitly state that it is not.
 | Delayed Cost Explorer remained effectively zero but estimated | [`docs/cloud-teardown.md`](../cloud-teardown.md#billing-boundary) |
 | The current cloud design is reproducible but intentionally offline | [`docs/architecture.md`](../architecture.md), [`infra/`](../../infra/) |
 
+## Portfolio demonstration
+
+| Claim | Evidence |
+|---|---|
+| A local end-to-end demonstration covers startup, an authenticated incident, dependency failure, recovery, and cleanup | [`docs/demo-runbook.md`](../demo-runbook.md), [`m12-local-demo.txt`](m12-local-demo.txt) |
+| Public résumé bullets and interview stories are bounded by verified project evidence | [`docs/career-stories.md`](../career-stories.md) |
+| The live process stayed healthy while database-dependent readiness failed safely | [`m12-local-demo.txt`](m12-local-demo.txt) |
+
 ## Release checkpoints
 
 | Release | Verified scope |
