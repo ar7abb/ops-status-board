@@ -6,7 +6,7 @@ identifiers into an issue, pull request, terminal transcript, or screenshot.
 
 ## Local workstation and Compose
 
-The root [`README.md`](../README.md#local-docker-compose) contains the supported
+The root [`README.md`](../README.md#quick-local-demonstration) contains the supported
 local lifecycle: create private environment files, validate Compose, start the
 database, run migrations, start the application, verify readiness, and stop the
 stack without deleting its named volume.
